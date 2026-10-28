@@ -1,0 +1,34 @@
+{
+  "name": "hhs",
+  "private": true,
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @hhs/api --filter @hhs/web dev",
+    "build": "pnpm --filter @hhs/api db:generate && pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "db:generate": "pnpm --filter @hhs/api db:generate",
+    "db:migrate": "pnpm --filter @hhs/api db:migrate",
+    "db:seed": "pnpm --filter @hhs/api db:seed",
+    "db:local": "pnpm --filter @hhs/api exec prisma dev --name hhs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.0",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.4.3",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.4"
+  }
+}
