@@ -21,24 +21,22 @@ export default async function ProtectedLayout({
         </div>
       </header>
       <div className="admin-workspace">
-        <nav className="admin-nav" aria-label="Довідники">
-          <p className="eyebrow">Каталог</p>
+        <nav className="admin-nav" aria-label="Адміністрування">
+          <p className="eyebrow">Товари</p>
+          <Link href="/admin/categories">{sections.categories}</Link>
+          <Link href="/admin/attributes">{sections.attributes}</Link>
           <Link href="/admin/products">Товари</Link>
-          <Link href="/admin/orders">Замовлення</Link>
-          <p className="eyebrow">Складський облік</p>
+          <p className="eyebrow">Склад</p>
+          <Link href="/admin/suppliers">{sections.suppliers}</Link>
+          <Link href="/admin/warehouses">{sections.warehouses}</Link>
+          <Link href="/admin/units">{sections.units}</Link>
           {Object.entries(inventorySections).map(([key, label]) => (
             <Link key={key} href={`/admin/inventory/${key}`}>
               {label}
             </Link>
           ))}
-          <p className="eyebrow">Довідники</p>
-          {Object.entries(sections)
-            .filter(([key]) => key !== 'attribute-values')
-            .map(([key, label]) => (
-              <Link key={key} href={`/admin/${key}`}>
-                {label}
-              </Link>
-            ))}
+          <p className="eyebrow">Магазин</p>
+          <Link href="/admin/orders">Замовлення</Link>
         </nav>
         <main id="main" className="admin-main">
           {children}

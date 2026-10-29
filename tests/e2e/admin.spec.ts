@@ -46,9 +46,11 @@ test('admin creates, edits and finds reference data, then signs out', async ({
     await expect(
       page.getByRole('heading', { name: `Річкові ${suffix}`, exact: true }),
     ).toBeVisible();
-    await page.getByRole('link', { name: 'Одиниці', exact: true }).click();
+    await page
+      .getByRole('link', { name: 'Одиниці виміру', exact: true })
+      .click();
     await expect(
-      page.getByRole('heading', { name: 'Одиниці', exact: true }),
+      page.getByRole('heading', { name: 'Одиниці виміру', exact: true }),
     ).toBeVisible();
     await add(page, `Штука ${suffix}`);
     await page.getByLabel('Позначення', { exact: true }).fill(suffix);

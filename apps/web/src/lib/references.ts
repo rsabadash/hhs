@@ -2,7 +2,7 @@ export const sections = {
   categories: 'Категорії',
   attributes: 'Атрибути',
   'attribute-values': 'Значення атрибута',
-  units: 'Одиниці',
+  units: 'Одиниці виміру',
   warehouses: 'Склади',
   suppliers: 'Постачальники',
 } as const;

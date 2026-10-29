@@ -4,7 +4,7 @@ M4 adds authenticated Ukrainian admin pages for supplies, warehouse balances, st
 
 ## Receive a supply
 
-1. Open **Складський облік → Постачання → Нове постачання**.
+1. Open **Склад → Постачання → Нове постачання**.
 2. Enter a unique document reference; select a supplier and one destination warehouse.
 3. Use **Додати SKU** to search by product, variant name or SKU. The picker shows the variant attributes and stock unit. Add up to 100 distinct SKUs from different products. Unpublished variants can be received; archived products/variants cannot.
 4. Enter quantity and purchase price per stock unit. Pieces/pairs use whole quantities; fractional units permit up to three decimal places. Purchase prices permit two decimal places and may be zero. Unit conversion is deferred.
