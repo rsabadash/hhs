@@ -6,10 +6,10 @@ test('Ukrainian storefront loads with accessible navigation and no horizontal ov
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Особливі прикраси',
+    'Деталі, з яких починається краса.',
   );
   await expect(
-    page.getByText('Готуємо каталог до відкриття.', { exact: false }),
+    page.getByRole('searchbox', { name: 'Пошук', exact: true }),
   ).toBeVisible();
   await page.keyboard.press('Tab');
   await expect(

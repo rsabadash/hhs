@@ -1,10 +1,10 @@
 # Jewelry materials catalog and inventory — implementation plan
 
-Status: implementation authorized on 2026-10-28. The user waived further UX revision. M1 technical foundation is deployed and verified; M2 authentication and reference data is deployed and the user confirmed administrator provisioning works; M3 catalog and Cloudinary integration are deployed and verified; M4 supplies/inventory is implemented and verified on an isolated Neon branch and desktop/mobile browsers, awaiting release; detailed proposed rules remain documented defaults to refine during their feature milestones.
+Status: implementation authorized on 2026-10-28. The user waived further UX revision. M1 technical foundation is deployed and verified; M2 authentication and reference data is deployed and the user confirmed administrator provisioning works; M3 catalog and Cloudinary integration are deployed and verified; M4 supplies/inventory is committed and verified on an isolated Neon branch and desktop/mobile browsers; M5 public catalog is implemented and verified on an isolated Neon branch and desktop/mobile browsers, awaiting release; detailed proposed rules remain documented defaults to refine during their feature milestones.
 
 Updated: 2026-10-29.
 
-M4 workflow and API: [supplies and inventory guide](inventory.md).
+M4 workflow and API: [supplies and inventory guide](inventory.md). M5: [public catalog guide](storefront.md).
 
 ## 1. Current position
 
@@ -315,9 +315,9 @@ Workstream responsibilities:
 
 Do not ask again about unit-conversion deferral, one warehouse per order, shared SKU prices across warehouses, cancellation before fulfillment, or sold-out visibility: those decisions are confirmed.
 
-M1 is complete: the prototype release passed checks, migrations, Render/Netlify deployment and health checks in [run 40853149068](https://github.com/rsabadash/hhs/actions/runs/40853149068). M2 is deployed and the administrator account is working. M3 is the current milestone; see [catalog management](catalog.md). Implement subsequent milestones in the order above. Skipping UX revision does not mean implementing every feature at once.
+M1 is complete: the prototype release passed checks, migrations, Render/Netlify deployment and health checks in [run 40853149068](https://github.com/rsabadash/hhs/actions/runs/40853149068). M2 is deployed and the administrator account is working. M5 is the current milestone; see [public catalog](storefront.md). Implement subsequent milestones in the order above. Skipping UX revision does not mean implementing every feature at once.
 
-Target repository: `https://github.com/rsabadash/hhs`. Neon, Render and Netlify are connected and the GitHub prototype environment is configured. Releases are manually dispatched after checks. M3 local checks and the real Cloudinary upload/delivery/deletion smoke have passed. Release remains; the hosted API needs the Cloudinary environment variables before uploads can be used.
+Target repository: `https://github.com/rsabadash/hhs`. Neon, Render and Netlify are connected and the GitHub prototype environment is configured. Releases are manually dispatched after checks. M3 catalog and Cloudinary integration are deployed. M4 supplies/inventory is committed. M5 adds the public storefront and Instagram handoff; configure the business Instagram username before releasing it.
 
 See [foundation status](foundation.md) for delivered checks and remaining setup. Early unvalidated drafts are preserved locally under `.local/early-drafts` and are not shipped as completed features.
 

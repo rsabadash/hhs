@@ -1,6 +1,6 @@
 # M3: products, variants and images
 
-The admin catalog lives at `/admin/products`. M2 login and reference management must already be available. This milestone adds catalog management; the public storefront is still the placeholder until M5. Publishing a SKU records its catalog status, but does not yet create a public product page or change stock.
+The admin catalog lives at `/admin/products`. M2 login and reference management must already be available. This milestone adds catalog management. M5 exposes published active SKUs in the [public storefront](storefront.md). Publishing changes public visibility; it does not change stock.
 
 ## Create a product
 

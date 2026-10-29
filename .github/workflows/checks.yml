@@ -27,6 +27,7 @@ jobs:
       TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/hhs_test
       API_URL: http://127.0.0.1:4000
       NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_INSTAGRAM_USERNAME: hhs_test
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: pnpm/action-setup@v6.1.0

@@ -126,7 +126,10 @@ test('admin receives multiple SKUs and reconciles warehouse stock through a sepa
     await page
       .getByRole('button', { name: 'Зберегти чернетку', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/counts\/[a-f0-9-]{36}$/);
+    // Creating and loading a count requires two server round trips.
+    await expect(page).toHaveURL(/\/counts\/[a-f0-9-]{36}$/, {
+      timeout: 15000,
+    });
     await page
       .getByRole('button', { name: 'Почати підрахунок', exact: true })
       .click();

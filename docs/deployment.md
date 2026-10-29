@@ -45,7 +45,7 @@ Never expose these secrets to pull-request checks. Configure branch protection f
 
 ## Release
 
-Run **Deploy prototype** from `main`. It runs the full checks workflow against an isolated PostgreSQL 18 service. After success, it applies the checked migration, deploys the exact API commit and waits for it, builds/deploys the frontend from the same checkout, and checks API/web readiness. Releases are serialized and are manually initiated during the prototype stage.
+Run **Deploy prototype** from `main`. It runs the full checks workflow against an isolated PostgreSQL 18 service. After success, it applies the checked migration, deploys the exact API commit and waits for it, builds/deploys the frontend from the same checkout, and checks API/web readiness plus the public catalog API and storefront. Releases are serialized and are manually initiated during the prototype stage.
 
 The database migration happens before application deployment. Use backward-compatible migrations. A failed application deployment does not undo a successful migration. Inspect GitHub and provider logs, correct the issue, and rerun the release; migrations are tracked by Prisma. Never edit an already applied migration. Before real business data is accepted, establish and test database export/restore and media backup procedures in M7.
 
@@ -62,3 +62,7 @@ For application rollback, deploy a previously checked commit that remains compat
 ## M3 image storage
 
 Add `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` to the Render API environment before using uploads. The catalog remains editable without these optional settings. Run the opt-in provider smoke and review image cleanup maintenance in [the catalog guide](catalog.md). No Cloudinary credential is needed by the Next.js build or the GitHub release workflow.
+
+## M5 public catalog
+
+Add the business Instagram handle as non-secret variable `INSTAGRAM_USERNAME` in GitHub environment `prototype`. The release workflow embeds it as `NEXT_PUBLIC_INSTAGRAM_USERNAME` in the web build; changes require a new release. Leave it unset until the real handle is known: the catalog still works, and the contact link stays hidden. See [the public catalog guide](storefront.md). M5 needs no additional database migration.

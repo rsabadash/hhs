@@ -40,6 +40,7 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
           API_URL: ${{ vars.API_URL }}
+          NEXT_PUBLIC_INSTAGRAM_USERNAME: ${{ vars.INSTAGRAM_USERNAME }}
       - name: Verify deployed services
         run: node scripts/smoke-deployment.mjs
         env:

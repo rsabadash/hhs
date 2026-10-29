@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { StorefrontController, StorefrontService } from './storefront.js';
 import { Module } from '@nestjs/common';
 import { InventoryController, InventoryService } from './inventory.js';
 import { Database } from './db.js';
@@ -11,6 +12,7 @@ import { ReferenceController, ReferenceService } from './references.js';
 @Module({
   controllers: [
     HealthController,
+    StorefrontController,
     InventoryController,
     AuthController,
     ReferenceController,
@@ -19,6 +21,7 @@ import { ReferenceController, ReferenceService } from './references.js';
   ],
   providers: [
     Database,
+    StorefrontService,
     InventoryService,
     AuthService,
     AdminGuard,
