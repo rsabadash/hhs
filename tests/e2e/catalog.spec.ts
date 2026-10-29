@@ -133,16 +133,18 @@ test('admin creates and edits two SKU variants, filters them, and previews share
       );
     }
     await page.reload();
-    await page.getByLabel('Показати для').selectOption(variantRows.rows[0].id);
     await expect(
-      page.locator('.gallery-preview').getByAltText('Спільне фото'),
-    ).toBeVisible();
-    await page.getByLabel('Показати для').selectOption(variantRows.rows[1].id);
-    await expect(
-      page.locator('.gallery-preview').getByAltText('Фото 8 мм'),
+      page
+        .locator('.product-details')
+        .getByAltText('Спільне фото', { exact: true }),
     ).toBeVisible();
     await expect(
-      page.locator('.gallery-preview').getByAltText('Спільне фото'),
+      page.locator('.variant-card').getByAltText('Фото 8 мм', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page
+        .locator('.variant-card')
+        .getByAltText('Спільне фото', { exact: true }),
     ).toHaveCount(0);
     await page.screenshot({
       path: testInfo.outputPath('catalog-editor.png'),

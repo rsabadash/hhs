@@ -8,7 +8,7 @@ The admin catalog lives at `/admin/products`. M2 login and reference management 
 2. Open **Товари → Додати товар**. Enter the Ukrainian name, description, category and comma-separated tags.
 3. Add shared attributes that apply to every variant. For example, pearl material can be shared while diameter varies.
 4. Add each variant with its own name, SKU, stock/selling unit, attributes and optional UAH selling price. A product without variations still has one SKU.
-5. Save the product. Its gallery becomes available after saving.
+5. Use **Додати фото** in **Про товар** for shared photos and inside each variant for its own photos. Select several files at once, review previews and remove unwanted photos. Then choose **Зберегти товар** once to save the product and its photos.
 
 SKU whitespace is trimmed and letters become uppercase. SKU uniqueness is also enforced case-insensitively by the database. A SKU belongs permanently to its product; existing variants are archived rather than deleted. The API rejects attempts to omit an existing variant from an update. A variant's stock unit cannot change once any balance, supply, order or inventory-count line references it.
 
@@ -16,7 +16,9 @@ Choose an attribute value once per attribute. Shared attributes cannot be overri
 
 Prices use decimal strings with at most 12 integer digits and 2 fractional digits. Publishing requires an active variant and a positive price. Zero-stock publication is allowed so catalog preparation can precede receiving stock, and sold-out SKUs remain publishable. A blank price is allowed for drafts. Archiving a product unpublishes every variant; restoring it leaves those variants in draft until explicitly published again.
 
-Product updates include the last `updatedAt` value. Another administrator's intervening change produces a conflict rather than silently replacing their work. Refresh and reapply changes after reviewing the current record. Gallery operations are independent of the product form.
+Product updates include the last `updatedAt` value. Another administrator's intervening change produces a conflict rather than silently replacing their work. Refresh and reapply changes after reviewing the current record. Photo additions, removals, descriptions, ordering and assignment changes are saved with the product form. Photo settings are available beneath each thumbnail. A variant without its own photos uses shared product photos.
+
+There is a combined limit of 20 photos per product, including all variant photos. File selection checks format, size and remaining slots before saving. If some photo operations fail, the product and completed operations remain saved; the editor retains unfinished changes for retry. Keep the page open and press **Зберегти товар** again. Acknowledged uploads are not uploaded again during that retry.
 
 Tags are normalized to Unicode NFC, lowercase Ukrainian text and single spaces. Duplicates are collapsed. Tags are removed from storage only when no product references them. Archiving retains tags because the archived product still references them. Tag replacement and cleanup run in the same serialized transaction as the product edit.
 
@@ -36,13 +38,13 @@ CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
 ```
 
-No Cloudinary credentials belong in browser variables, Netlify, source control, or screenshots. No unsigned upload preset is needed. Without credentials, catalog editing works and the gallery explains that uploads are not configured.
+No Cloudinary credentials belong in browser variables, Netlify, source control, or screenshots. No unsigned upload preset is needed. Without credentials, catalog editing works and the editor explains that uploads are not configured.
 
 The authenticated frontend sends a JSON data URL through the same-origin Next proxy. Uploads accept JPEG, PNG and WebP only, up to 3 MiB each and 20 images total per product. The server validates MIME, signature and decoded size, then Cloudinary validates the image and limits stored dimensions to 2000 × 2000. SVG, arbitrary URLs and user-selected public IDs are rejected. Credentials remain on the Nest server. Proxy limits are 32 KiB for existing admin routes, 256 KiB for product writes and 4,250,000 bytes for image uploads; the API parser is capped at 5 MiB.
 
-Images can be shared or assigned to one variant of the same product. Edit alt text, scope and numeric order, then save that image. Lower order numbers display first; ties use ID order. The gallery preview displays a variant's own images when present and shared images otherwise. Deleting the final variant image restores shared fallback.
+Images can be shared or assigned to one variant of the same product. Edit alt text, scope and numeric order under **Налаштування фото**, then save the product. Lower order numbers display first; ties use ID order. The editor groups photos by their assignment; the storefront displays a variant's own images when present and shared images otherwise. Removing the final variant image and saving restores shared fallback.
 
-To include an image in the first save, use **Додати зображення** immediately above **Зберегти товар**. Select a file and choose the product or a variant, then save once. This also works when editing a product. The product is saved before the image upload; if uploading fails, the selected file stays available for retry and saving again updates the same product. Additional images, alt text, ordering and removal remain available in the saved product's gallery.
+Use **Додати фото** inside the product or variant section to queue multiple files for that section. This works both on first creation and when editing. Previews appear immediately; removing a pending photo or an unsaved variant removes its queued files. The product is saved before its photo operations, and retrying updates the same product. There is no separate gallery upload step.
 
 Upload reservations and failed deletions are stored in `ImageCleanup`. An upload that succeeds but loses its response or database transaction stays eligible for cleanup. Successful attachments remove their reservation. Deletion detaches the database record transactionally, attempts provider deletion immediately, and retains a retry record on failure. Never delete records from this queue manually without checking Cloudinary.
 

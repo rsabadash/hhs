@@ -3,12 +3,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { writeAdmin } from '@/lib/references';
-import type { CatalogProduct, CatalogVariant } from '@/lib/catalog';
+import type {
+  CatalogImage,
+  CatalogProduct,
+  CatalogVariant,
+} from '@/lib/catalog';
 import ReferencePicker from './reference-picker';
 import ProductAttributes from './product-attributes';
-import ProductGallery from './product-gallery';
+import ProductPhotos, { type DraftPhoto } from './product-photos';
 import { imageData } from '@/lib/image-upload';
-const newVariant = (): CatalogVariant => ({
+type EditorVariant = CatalogVariant & { key: string };
+const newVariant = (key: string): EditorVariant => ({
+  key,
   name: '',
   sku: '',
   unitId: '',
@@ -28,9 +34,18 @@ export default function ProductEditor({
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [persisted, setPersisted] = useState(initial);
-  const [file, setFile] = useState<File | null>(null);
-  const [fileKey, setFileKey] = useState(0);
-  const [imageScope, setImageScope] = useState('');
+  const [photos, setPhotos] = useState<DraftPhoto[]>(() =>
+    (initial?.images || []).map((image) => ({
+      key: image.id,
+      scope: image.variantId,
+      image,
+      alt: image.alt,
+      position: image.position,
+    })),
+  );
+  const [removedPhotos, setRemovedPhotos] = useState<CatalogImage[]>([]);
+  const [progress, setProgress] = useState('');
+  const [notice, setNotice] = useState('');
   const [name, setName] = useState(initial?.name || '');
   const [description, setDescription] = useState(initial?.description || '');
   const [category, setCategory] = useState(initial?.category || null);
@@ -39,8 +54,61 @@ export default function ProductEditor({
   );
   const [attributes, setAttributes] = useState(initial?.attributes || []);
   const [archived, setArchived] = useState(Boolean(initial?.archivedAt));
-  const [variants, setVariants] = useState<CatalogVariant[]>(
-    initial?.variants || [newVariant()],
+  const [variants, setVariants] = useState<EditorVariant[]>(
+    () =>
+      initial?.variants.map((v) => ({ ...v, key: v.id! })) || [
+        newVariant('first'),
+      ],
+  );
+  const removePhoto = (key: string) => {
+    const photo = photos.find((photo) => photo.key === key);
+    if (photo?.image) setRemovedPhotos((items) => [...items, photo.image!]);
+    setPhotos((items) => items.filter((photo) => photo.key !== key));
+    setSaved(false);
+  };
+  const photoControls = (
+    scope: string | null,
+    label: string,
+    disabled: boolean,
+  ) => (
+    <ProductPhotos
+      label={label}
+      photos={photos.filter((photo) => photo.scope === scope)}
+      remaining={20 - photos.length}
+      disabled={!imagesConfigured || disabled}
+      scopes={variants.map((v, i) => ({
+        key: v.key,
+        name: v.sku || `Варіант ${i + 1}`,
+      }))}
+      add={(files) => {
+        setPhotos((items) => {
+          const position = Math.max(
+            -1,
+            ...items.map((photo) => photo.position),
+          );
+          return [
+            ...items,
+            ...files.map((file, i) => ({
+              key: crypto.randomUUID(),
+              scope,
+              file,
+              alt: '',
+              position: Math.min(position + i + 1, 999),
+            })),
+          ];
+        });
+        setSaved(false);
+      }}
+      change={(key, patch) => {
+        setPhotos((items) =>
+          items.map((photo) =>
+            photo.key === key ? { ...photo, ...patch } : photo,
+          ),
+        );
+        setSaved(false);
+      }}
+      remove={removePhoto}
+    />
   );
   const change = (index: number, patch: Partial<CatalogVariant>) => {
     setSaved(false);
@@ -57,21 +125,34 @@ export default function ProductEditor({
         Спільні властивості описують товар. Кожен варіант має власний SKU та
         одиницю продажу.
       </p>
+      {!imagesConfigured && (
+        <p role="status">
+          Cloudinary ще не налаштовано. Збереження товарів доступне.
+        </p>
+      )}
       <form
         onSubmit={async (e) => {
           e.preventDefault();
           setBusy(true);
           setError('');
+          setProgress('Збереження товару…');
           setSaved(false);
           let productSaved = false;
           try {
-            // Validate/read the file before creating a product. Upload only once
-            // its product and variant IDs exist.
-            const upload = file ? await imageData(file) : null;
-            const imageVariant =
-              imageScope === '' ? null : variants[Number(imageScope)];
-            if (upload && (archived || imageVariant?.archivedAt))
-              throw Error('Оберіть активний товар або варіант для зображення.');
+            if (photos.length > 20)
+              throw Error('До 20 фото на товар разом із варіантами.');
+            const uploads = await Promise.all(
+              photos
+                .filter((photo) => photo.file)
+                .map(async (photo) => {
+                  const variant = variants.find((v) => v.key === photo.scope);
+                  if (archived || variant?.archivedAt)
+                    throw Error(
+                      'Приберіть нові фото архівного товару або варіанта.',
+                    );
+                  return { photo, data: await imageData(photo.file!) };
+                }),
+            );
             const data: CatalogProduct = await writeAdmin(
               persisted ? `products/${persisted.id}` : 'products',
               persisted ? 'PUT' : 'POST',
@@ -115,22 +196,105 @@ export default function ProductEditor({
             setVariants(
               variants.map((v) => ({ ...v, id: matchingVariant(v.sku)?.id })),
             );
-            if (upload) {
-              const variantId = imageVariant
-                ? matchingVariant(imageVariant.sku)?.id
-                : null;
-              if (imageVariant && !variantId)
-                throw Error('Варіант для зображення не знайдено.');
-              await writeAdmin(`products/${data.id}/images`, 'POST', {
-                data: upload,
-                alt: (imageVariant
-                  ? `${name} · ${imageVariant.name}`
-                  : name
-                ).slice(0, 250),
-                variantId,
-              });
-              setFile(null);
-              setFileKey((key) => key + 1);
+            const scopeId = (photo: DraftPhoto) => {
+              if (photo.scope === null) return null;
+              const variant = variants.find((v) => v.key === photo.scope);
+              const id = variant && matchingVariant(variant.sku)?.id;
+              if (!id) throw Error('Варіант для фото не знайдено.');
+              return id;
+            };
+            // Free slots before uploading replacements. Acknowledged operations
+            // are removed from the queue so a partial failure can be retried.
+            for (const image of removedPhotos) {
+              const result = await writeAdmin(
+                `products/${data.id}/images/${image.id}`,
+                'DELETE',
+                {},
+              );
+              setRemovedPhotos((items) =>
+                items.filter((item) => item.id !== image.id),
+              );
+              if (result.cleanupPending)
+                setNotice(
+                  'Фото від’єднано. Видалення файлу зі сховища буде повторено.',
+                );
+            }
+            const updatePhoto = (photo: DraftPhoto, image: CatalogImage) => {
+              setPhotos((items) =>
+                items.map((item) =>
+                  item.key === photo.key
+                    ? {
+                        ...item,
+                        file: undefined,
+                        image,
+                        alt: image.alt,
+                        position: image.position,
+                      }
+                    : item,
+                ),
+              );
+            };
+            for (const photo of photos.filter((photo) => photo.image)) {
+              const image = photo.image!;
+              const variantId = scopeId(photo);
+              if (
+                image.alt !== photo.alt ||
+                image.position !== photo.position ||
+                image.variantId !== variantId
+              ) {
+                const updated = await writeAdmin(
+                  `products/${data.id}/images/${image.id}`,
+                  'PUT',
+                  {
+                    alt: photo.alt,
+                    position: photo.position,
+                    variantId,
+                  },
+                );
+                updatePhoto(photo, updated);
+              }
+            }
+            for (const [index, { photo, data: image }] of uploads.entries()) {
+              setProgress(
+                `Завантаження фото ${index + 1} з ${uploads.length}…`,
+              );
+              const variant = variants.find((v) => v.key === photo.scope);
+              const uploaded: CatalogImage = await writeAdmin(
+                `products/${data.id}/images`,
+                'POST',
+                {
+                  data: image,
+                  alt:
+                    photo.alt ||
+                    (variant ? `${name} · ${variant.name}` : name).slice(
+                      0,
+                      250,
+                    ),
+                  variantId: scopeId(photo),
+                },
+              );
+              // Record the upload before editing its position so retries cannot
+              // upload it again when the metadata request fails.
+              updatePhoto(photo, uploaded);
+              if (uploaded.position !== photo.position) {
+                setPhotos((items) =>
+                  items.map((item) =>
+                    item.key === photo.key
+                      ? { ...item, position: photo.position }
+                      : item,
+                  ),
+                );
+                const ordered = await writeAdmin(
+                  `products/${data.id}/images/${uploaded.id}`,
+                  'PUT',
+                  {
+                    alt: uploaded.alt,
+                    position: photo.position,
+                    variantId: uploaded.variantId,
+                  },
+                );
+                updatePhoto(photo, ordered);
+              }
             }
             setSaved(true);
             router.replace(`/admin/products/${data.id}`);
@@ -138,16 +302,17 @@ export default function ProductEditor({
           } catch (e) {
             setError(
               productSaved
-                ? `Товар збережено, але зображення не завантажено. ${(e as Error).message} Натисніть «Зберегти товар», щоб повторити, або приберіть файл.`
+                ? `Товар збережено, але не всі фото збережено. ${(e as Error).message} Натисніть «Зберегти товар», щоб повторити незавершені зміни, або приберіть фото.`
                 : (e as Error).message,
             );
           } finally {
             setBusy(false);
+            setProgress('');
           }
         }}
       >
         <fieldset disabled={busy} className="catalog-fields">
-          <div className="catalog-card">
+          <div className="catalog-card product-details">
             <h2>Про товар</h2>
             <label>
               Назва товару
@@ -183,6 +348,7 @@ export default function ProductEditor({
                 placeholder="перлини, натуральні матеріали"
               />
             </label>
+            {photoControls(null, 'Фото товару', archived)}
             <h3>Спільні атрибути</h3>
             <ProductAttributes value={attributes} onChange={setAttributes} />
             <label className="check-label">
@@ -200,7 +366,7 @@ export default function ProductEditor({
             обрану одиницю. Залишки змінюються через складські документи.
           </p>
           {variants.map((v, i) => (
-            <div key={v.id || `new-${i}`} className="catalog-card variant-card">
+            <div key={v.key} className="catalog-card variant-card">
               <h3>
                 Варіант {i + 1}
                 {v.archivedAt ? ' · Архівний' : ''}
@@ -260,6 +426,16 @@ export default function ProductEditor({
                   </select>
                 </label>
               </div>
+              {photoControls(
+                v.key,
+                `Фото варіанта ${i + 1}`,
+                archived || Boolean(v.archivedAt),
+              )}
+              {!photos.some((photo) => photo.scope === v.key) && (
+                <p className="muted">
+                  Без власних фото варіант використовує фото товару.
+                </p>
+              )}
               <h4>Атрибути варіанта</h4>
               <ProductAttributes
                 value={v.attributes}
@@ -287,14 +463,10 @@ export default function ProductEditor({
                   disabled={variants.length === 1}
                   onClick={() => {
                     setVariants(variants.filter((_, n) => n !== i));
-                    if (imageScope !== '') {
-                      const scope = Number(imageScope);
-                      if (scope === i) {
-                        setFile(null);
-                        setFileKey((key) => key + 1);
-                        setImageScope('');
-                      } else if (scope > i) setImageScope(String(scope - 1));
-                    }
+                    setPhotos((items) =>
+                      items.filter((photo) => photo.scope !== v.key),
+                    );
+                    setSaved(false);
                   }}
                 >
                   Прибрати варіант
@@ -305,72 +477,20 @@ export default function ProductEditor({
           <button
             type="button"
             disabled={variants.length >= 50}
-            onClick={() => setVariants([...variants, newVariant()])}
+            onClick={() =>
+              setVariants([...variants, newVariant(crypto.randomUUID())])
+            }
           >
             Додати варіант
           </button>
           <div className="catalog-save">
-            <div className="catalog-card">
-              <h2>Додати зображення</h2>
-              <p className="muted">
-                Оберіть фото — воно завантажиться разом зі збереженням товару.
-                JPEG, PNG або WebP до 3 МБ.
-              </p>
-              {!imagesConfigured && (
-                <p role="status">
-                  Cloudinary ще не налаштовано. Збереження товарів доступне.
-                </p>
-              )}
-              <div className="catalog-grid">
-                <label>
-                  Фото до збереження
-                  <input
-                    key={fileKey}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    disabled={!imagesConfigured || archived}
-                    onChange={(e) => {
-                      setFile(e.target.files?.[0] || null);
-                      setSaved(false);
-                    }}
-                  />
-                </label>
-                <label>
-                  Зображення для
-                  <select
-                    value={imageScope}
-                    disabled={!imagesConfigured || archived}
-                    onChange={(e) => setImageScope(e.target.value)}
-                  >
-                    <option value="">Спільне для товару</option>
-                    {variants.map(
-                      (v, i) =>
-                        !v.archivedAt && (
-                          <option key={i} value={String(i)}>
-                            {v.sku || `Варіант ${i + 1}`} · {v.name}
-                          </option>
-                        ),
-                    )}
-                  </select>
-                </label>
-              </div>
-              {file && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFile(null);
-                    setFileKey((key) => key + 1);
-                  }}
-                >
-                  Прибрати файл
-                </button>
-              )}
-            </div>
             {error && (
               <p role="alert" className="error">
                 {error}
               </p>
             )}
+            {notice && <p role="status">{notice}</p>}
+            {progress && <p role="status">{progress}</p>}
             {saved && <p role="status">Товар збережено.</p>}
             <button className="primary" type="submit">
               {busy ? 'Збереження…' : 'Зберегти товар'}
@@ -378,9 +498,6 @@ export default function ProductEditor({
           </div>
         </fieldset>
       </form>
-      {persisted && (
-        <ProductGallery product={persisted} configured={imagesConfigured} />
-      )}
     </section>
   );
 }
