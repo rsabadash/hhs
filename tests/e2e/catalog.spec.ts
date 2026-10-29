@@ -158,17 +158,21 @@ test('admin creates and edits two SKU variants, filters them, and previews share
       path: testInfo.outputPath('catalog-editor-viewport.png'),
     });
     await page.goto(
-      `/admin/products?q=${marker}&valueIds=${small.id}&minPrice=50`,
+      `/admin/products?q=${marker}&sort=desc&valueIds=${small.id}&minPrice=50`,
     );
     await expect(page.getByRole('status')).toContainText('Знайдено товарів: 0');
     await page.getByRole('button', { name: /^Фільтри/ }).click();
     await page.getByRole('button', { name: 'Скинути фільтри' }).click();
-    await expect(page).toHaveURL('/admin/products');
+    await expect(page).toHaveURL(`/admin/products?q=${marker}&sort=desc`);
+    await expect(page.getByLabel('Пошук за назвою або SKU')).toHaveValue(
+      marker,
+    );
+    await expect(page.getByLabel('Сортування', { exact: true })).toHaveValue(
+      'desc',
+    );
     await page.getByRole('button', { name: /^Фільтри/ }).click();
     await expect(page.getByLabel('Мін. ціна, грн')).toHaveValue('');
     await page.getByRole('button', { name: 'Закрити фільтри' }).click();
-    await page.getByLabel('Пошук за назвою або SKU').fill(marker);
-    await page.getByRole('button', { name: 'Знайти', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('Знайдено товарів: 1');
     await expect(
       page.getByText(`${marker}-1`.toUpperCase(), { exact: true }),
