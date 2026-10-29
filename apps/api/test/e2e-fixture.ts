@@ -35,6 +35,14 @@ export async function adminFixture() {
         [email],
       );
       await pool.query(
+        'DELETE FROM "OrderItem" WHERE "orderId" IN (SELECT id FROM "Order" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1))',
+        [email],
+      );
+      await pool.query(
+        'DELETE FROM "Order" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
+        [email],
+      );
+      await pool.query(
         'DELETE FROM "InventoryCountItem" WHERE "countId" IN (SELECT id FROM "InventoryCount" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1))',
         [email],
       );

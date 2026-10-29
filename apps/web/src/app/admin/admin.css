@@ -542,3 +542,18 @@
   display: block;
   font-weight: normal;
 }
+
+.order-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.order-page,
+.order-reference {
+  overflow-wrap: anywhere;
+}
+.order-total {
+  font-size: 1.3rem;
+  text-align: right;
+}

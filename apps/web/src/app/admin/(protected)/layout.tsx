@@ -24,6 +24,7 @@ export default async function ProtectedLayout({
         <nav className="admin-nav" aria-label="Довідники">
           <p className="eyebrow">Каталог</p>
           <Link href="/admin/products">Товари</Link>
+          <Link href="/admin/orders">Замовлення</Link>
           <p className="eyebrow">Складський облік</p>
           {Object.entries(inventorySections).map(([key, label]) => (
             <Link key={key} href={`/admin/inventory/${key}`}>

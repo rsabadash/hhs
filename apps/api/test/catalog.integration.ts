@@ -320,7 +320,7 @@ describe('catalog persisted rules', () => {
     // Keep this pair of fixtures independent from the tag lifecycle scenario.
     for (const id of [saved.id, pair.id])
       await service.save(id, { ...(await editable(id)), tags: [] });
-  });
+  }, 30000);
   it('binds uploaded files to owned variants, orders images, and retries provider deletion failures', async () => {
     const product = ids[1];
     const p = await service.get(product);

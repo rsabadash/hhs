@@ -52,6 +52,8 @@ model Admin {
   sessions         Session[]
   supplies         Supply[]
   orders           Order[]
+  fulfilledOrders  Order[]          @relation("OrderFulfilledBy")
+  cancelledOrders  Order[]          @relation("OrderCancelledBy")
   counts           InventoryCount[]
   movements        StockMovement[]
   receivedSupplies Supply[]         @relation("ReceivedBy")
@@ -280,21 +282,27 @@ model SupplyItem {
 }
 
 model Order {
-  id           String      @id @default(uuid()) @db.Uuid
-  reference    String      @unique
-  requestKey   String      @unique @db.Uuid
-  warehouseId  String      @db.Uuid
-  warehouse    Warehouse   @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  createdById  String      @db.Uuid
-  createdBy    Admin       @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  status       OrderStatus @default(CONFIRMED)
-  customerName String
-  contact      String
-  notes        String      @default("")
-  createdAt    DateTime    @default(now()) @db.Timestamptz(3)
-  fulfilledAt  DateTime?   @db.Timestamptz(3)
-  cancelledAt  DateTime?   @db.Timestamptz(3)
-  items        OrderItem[]
+  id                 String      @id @default(uuid()) @db.Uuid
+  reference          String      @unique
+  requestKey         String      @unique @db.Uuid
+  requestHash        String?
+  fulfilledById      String?     @db.Uuid
+  fulfilledBy        Admin?      @relation("OrderFulfilledBy", fields: [fulfilledById], references: [id], onDelete: Restrict)
+  cancelledById      String?     @db.Uuid
+  cancelledBy        Admin?      @relation("OrderCancelledBy", fields: [cancelledById], references: [id], onDelete: Restrict)
+  cancellationReason String      @default("")
+  warehouseId        String      @db.Uuid
+  warehouse          Warehouse   @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  createdById        String      @db.Uuid
+  createdBy          Admin       @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  status             OrderStatus @default(CONFIRMED)
+  customerName       String
+  contact            String
+  notes              String      @default("")
+  createdAt          DateTime    @default(now()) @db.Timestamptz(3)
+  fulfilledAt        DateTime?   @db.Timestamptz(3)
+  cancelledAt        DateTime?   @db.Timestamptz(3)
+  items              OrderItem[]
 
   @@unique([id, warehouseId])
   @@index([warehouseId, status, createdAt])

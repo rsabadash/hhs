@@ -51,15 +51,18 @@ export async function writeAdmin(
       // A hard navigation clears all cached admin layouts after session expiry.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign('/admin/login?expired=1');
-    throw new Error(
-      Array.isArray(data.fields) && data.fields.length
-        ? data.fields
-            .slice(0, 3)
-            .map((field: { message: string }) => field.message)
-            .join(' ')
-        : typeof data.message === 'string'
-          ? data.message
-          : 'Не вдалося зберегти дані.',
+    throw Object.assign(
+      new Error(
+        Array.isArray(data.fields) && data.fields.length
+          ? data.fields
+              .slice(0, 3)
+              .map((field: { message: string }) => field.message)
+              .join(' ')
+          : typeof data.message === 'string'
+            ? data.message
+            : 'Не вдалося зберегти дані.',
+      ),
+      { status: response.status },
     );
   }
   return data;

@@ -315,9 +315,9 @@ Workstream responsibilities:
 
 Do not ask again about unit-conversion deferral, one warehouse per order, shared SKU prices across warehouses, cancellation before fulfillment, or sold-out visibility: those decisions are confirmed.
 
-M1 is complete: the prototype release passed checks, migrations, Render/Netlify deployment and health checks in [run 40853149068](https://github.com/rsabadash/hhs/actions/runs/40853149068). M2 is deployed and the administrator account is working. M5 is the current milestone; see [public catalog](storefront.md). Implement subsequent milestones in the order above. Skipping UX revision does not mean implementing every feature at once.
+M1 is complete: the prototype release passed checks, migrations, Render/Netlify deployment and health checks in [run 40853149068](https://github.com/rsabadash/hhs/actions/runs/40853149068). M2 is deployed and the administrator account is working. M6 adds manual orders; see [order operations](orders.md). M7 release validation is next. Implement subsequent milestones in the order above. Skipping UX revision does not mean implementing every feature at once.
 
-Target repository: `https://github.com/rsabadash/hhs`. Neon, Render and Netlify are connected and the GitHub prototype environment is configured. Releases are manually dispatched after checks. M3 catalog and Cloudinary integration are deployed. M4 supplies/inventory is committed. M5 adds the public storefront and Instagram handoff; configure the business Instagram username before releasing it.
+Target repository: `https://github.com/rsabadash/hhs`. Neon, Render and Netlify are connected and the GitHub prototype environment is configured. Releases are manually dispatched after checks. M3 catalog and Cloudinary integration are deployed. M4 supplies/inventory is committed. M5 public storefront and Instagram handoff is committed; configure the business Instagram username before releasing it. M6 adds manual orders and an additive audit/idempotency migration. It has not been deployed.
 
 See [foundation status](foundation.md) for delivered checks and remaining setup. Early unvalidated drafts are preserved locally under `.local/early-drafts` and are not shipped as completed features.
 

@@ -1,6 +1,6 @@
 # Supplies and inventory (M4)
 
-M4 adds authenticated Ukrainian admin pages for supplies, warehouse balances, stock movements and separate inventory-count documents. Public storefront and manual orders remain later milestones.
+M4 adds authenticated Ukrainian admin pages for supplies, warehouse balances, stock movements and separate inventory-count documents. The [public storefront](storefront.md) reads availability; [manual orders](orders.md) deduct stock and restore it on cancellation.
 
 ## Receive a supply
 
@@ -19,7 +19,7 @@ A repeated receive request returns the already-received document without adding 
 
 **Залишки** requires a warehouse selection. Every matching SKU is shown, including zero for SKUs without a balance row at that warehouse. Search by Ukrainian product name, variant name or SKU, and filter by category (including descendants), shared/variant attributes, tag, availability and archive state. By default balances include archived SKUs so their stock remains visible.
 
-**Рух запасів** records quantity, operation, warehouse, actor and time, with a link to the supply or inventory-count document. Filter by warehouse, operation and dates, or search by source reference/product/SKU. The per-SKU history link preserves warehouse and variant IDs.
+**Рух запасів** records quantity, operation, warehouse, actor and time, with a link to the supply, order or inventory-count document. Filter by warehouse, operation and dates, or search by source reference/product/SKU. The per-SKU history link preserves warehouse and variant IDs.
 
 Supplies and counts have searchable, paginated lists with relevant status, supplier, warehouse and date filters. Filters, sort order and page are in the URL. Date ranges are inclusive calendar dates in UTC (labeled in the form); displayed timestamps use Europe/Kyiv. Applying filters starts at page one. Sorting has an ID tie-breaker.
 
@@ -31,7 +31,7 @@ Supplies and counts have searchable, paginated lists with relevant status, suppl
 4. Save the counts, review, then **Провести інвентаризацію** and confirm. Every included line must have a valid quantity and an unchanged stock snapshot. At least one line must remain included.
 5. Posting creates one movement per nonzero difference and updates balances atomically. Zero differences create no movement. A repeated post does not change stock again. Posted documents cannot be edited or cancelled.
 
-Supply receipts or other reconciliations can change stock while counting. Posting then fails with the affected SKU and changes no balances. Save any local edits, use **Оновити знімок і перерахувати …** on each affected line, physically recount, and save the new quantity. Refreshing a snapshot clears its previous physical count and reason; it never silently reuses a stale count. **Скасувати інвентаризацію** cancels an unposted document without changing stock.
+Supply receipts, orders, order cancellations or other reconciliations can change stock while counting. Posting then fails with the affected SKU and changes no balances. Save any local edits, use **Оновити знімок і перерахувати …** on each affected line, physically recount, and save the new quantity. Refreshing a snapshot clears its previous physical count and reason; it never silently reuses a stale count. **Скасувати інвентаризацію** cancels an unposted document without changing stock.
 
 Document revisions prevent two administrators from overwriting each other's edits. A revision conflict requires a page reload before reapplying changes. Stock is never edited directly from a balance row.
 

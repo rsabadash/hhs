@@ -1,6 +1,6 @@
 # HHS — materials for jewelry
 
-Ukrainian catalog and inventory application for one business. Next.js frontend, NestJS API, PostgreSQL with Prisma, UAH prices. The deployed M1 foundation has passed a complete release. M2 adds admin authentication and searchable reference management; see the [admin guide](docs/admin-reference.md). M3 adds product/SKU management, filters, tags and Cloudinary galleries; see the [catalog guide](docs/catalog.md). M4 adds multi-SKU supplies, stock history and separate inventory counts; see the [inventory guide](docs/inventory.md). M5 adds the public catalog, SKU selection and Instagram inquiries; see the [storefront guide](docs/storefront.md). Manual orders remain in the [implementation plan](docs/implementation-plan.md).
+Ukrainian catalog and inventory application for one business. Next.js frontend, NestJS API, PostgreSQL with Prisma, UAH prices. The deployed M1 foundation has passed a complete release. M2 adds admin authentication and searchable reference management; see the [admin guide](docs/admin-reference.md). M3 adds product/SKU management, filters, tags and Cloudinary galleries; see the [catalog guide](docs/catalog.md). M4 adds multi-SKU supplies, stock history and separate inventory counts; see the [inventory guide](docs/inventory.md). M5 adds the public catalog, SKU selection and Instagram inquiries; see the [storefront guide](docs/storefront.md). M6 adds administrator-created orders, stock deduction, fulfillment and cancellation; see the [order guide](docs/orders.md). Release validation remains in the [implementation plan](docs/implementation-plan.md).
 
 ## Local setup
 
@@ -72,4 +72,4 @@ E2e tests start production API/web servers on ports 4000/3000, so those ports mu
 
 Target: [rsabadash/hhs](https://github.com/rsabadash/hhs). Checks run on pull requests and pushes to `main`. The manual **Deploy prototype** workflow reruns checks and deploys only on `main` with `DEPLOY_ENABLED=true`.
 
-Neon, Render, Netlify and GitHub deployment settings are configured. The first full prototype release passed on 2026-10-29; M2 and M3 are deployed; M5 requires a new release and the business Instagram username. See [deployment setup](docs/deployment.md), [foundation status and limits](docs/foundation.md), and the [health API contract](docs/openapi.yaml).
+Neon, Render, Netlify and GitHub deployment settings are configured. The first full prototype release passed on 2026-10-29; M2 and M3 are deployed; M5 and M6 require a new release; configure the business Instagram username for the storefront. See [deployment setup](docs/deployment.md), [foundation status and limits](docs/foundation.md), and the [health API contract](docs/openapi.yaml).

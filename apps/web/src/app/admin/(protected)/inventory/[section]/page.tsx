@@ -166,7 +166,9 @@ export default async function InventoryPage({
                           {source.reference}
                         </Link>
                       ) : (
-                        <span>{source.reference}</span>
+                        <Link href={`/admin/orders/${source.id}`}>
+                          {source.reference}
+                        </Link>
                       ))}
                   </article>
                 );

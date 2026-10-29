@@ -234,16 +234,18 @@ export class InventoryService {
       update: {},
     });
   }
-  private async move(
+  // Call only inside write(), with one aggregated change per SKU.
+  async move(
     tx: Tx,
     warehouseId: string,
     changes: {
       variantId: string;
       quantity: Prisma.Decimal;
-      kind: 'RECEIPT' | 'COUNT';
+      kind: 'RECEIPT' | 'COUNT' | 'SALE' | 'CANCELLATION';
       actorId: string;
       supplyItemId?: string;
       countItemId?: string;
+      orderItemId?: string;
     }[],
   ) {
     if (!changes.length) return;
