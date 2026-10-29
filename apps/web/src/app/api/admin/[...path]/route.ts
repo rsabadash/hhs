@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 const safePath =
-  /^(auth\/(login|logout|me)|references\/(categories|attributes|attribute-values|units|warehouses|suppliers)(\/[a-f0-9-]{36})?)$/;
+  /^(auth\/(login|logout|me)|products(\/(image-settings|[a-f0-9-]{36}(\/images(\/[a-f0-9-]{36})?)?))?|references\/(categories|attributes|attribute-values|units|warehouses|suppliers)(\/[a-f0-9-]{36})?)$/;
 const jsonError = (message: string, status: number) =>
   Response.json(
     { message },
@@ -37,7 +37,15 @@ async function proxy(
         const { done, value } = await reader.read();
         if (done) break;
         length += value.length;
-        if (length > 32768) {
+        if (
+          length >
+          (request.method === 'POST' &&
+          /^products\/[a-f0-9-]{36}\/images$/.test(path)
+            ? 4250000
+            : /^products(\/[a-f0-9-]{36})?$/.test(path)
+              ? 262144
+              : 32768)
+        ) {
           await reader.cancel();
           return jsonError('Запит завеликий.', 413);
         }
@@ -87,3 +95,5 @@ async function proxy(
 export const GET = proxy;
 export const POST = proxy;
 export const PUT = proxy;
+
+export const DELETE = proxy;

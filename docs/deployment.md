@@ -58,3 +58,7 @@ For application rollback, deploy a previously checked commit that remains compat
 - [Netlify Next.js runtime](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/)
 - [Netlify CLI deployment](https://cli.netlify.com/commands/deploy/)
 - [Neon plans](https://neon.com/pricing)
+
+## M3 image storage
+
+Add `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` to the Render API environment before using uploads. The catalog remains editable without these optional settings. Run the opt-in provider smoke and review image cleanup maintenance in [the catalog guide](catalog.md). No Cloudinary credential is needed by the Next.js build or the GitHub release workflow.

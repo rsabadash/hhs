@@ -9,7 +9,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
-    "db:admin-reset": "tsx --env-file-if-exists=.env prisma/reset-admin.ts"
+    "db:admin-reset": "tsx --env-file-if-exists=.env prisma/reset-admin.ts",
+    "images:cleanup": "tsx --env-file-if-exists=.env prisma/cleanup-images.ts",
+    "images:smoke": "tsx --env-file-if-exists=.env prisma/smoke-images.ts"
   },
   "dependencies": {
     "@nestjs/common": "12.3.2",

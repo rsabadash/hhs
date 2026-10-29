@@ -13,7 +13,9 @@ export class Database extends PrismaClient implements OnModuleDestroy {
         connectionString: config.DATABASE_URL,
         max: 5,
         connectionTimeoutMillis: 3000,
-        query_timeout: 3000,
+        // Catalog writes can wait behind another administrator's transaction.
+        // Keep the query budget below the 30s mutation and 55s HTTP budgets.
+        query_timeout: 15000,
       }),
     });
   }

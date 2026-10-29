@@ -19,7 +19,8 @@ export class HealthController {
   async ready() {
     try {
       // Also verifies the schema exists, without returning business data.
-      await this.database.$queryRaw`SELECT 1 FROM "Variant" LIMIT 1`;
+      await this.database
+        .$queryRaw`SELECT EXISTS(SELECT 1 FROM "Variant"), EXISTS(SELECT 1 FROM "LoginThrottle"), EXISTS(SELECT 1 FROM "ImageCleanup")`;
       return { status: 'ok' as const };
     } catch {
       throw new ServiceUnavailableException('Service unavailable');

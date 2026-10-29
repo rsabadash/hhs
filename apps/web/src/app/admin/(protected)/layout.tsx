@@ -21,6 +21,8 @@ export default async function ProtectedLayout({
       </header>
       <div className="admin-workspace">
         <nav className="admin-nav" aria-label="Довідники">
+          <p className="eyebrow">Каталог</p>
+          <Link href="/admin/products">Товари</Link>
           <p className="eyebrow">Довідники</p>
           {Object.entries(sections)
             .filter(([key]) => key !== 'attribute-values')

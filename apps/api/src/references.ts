@@ -320,7 +320,7 @@ export class ReferenceService {
             }
           }
         },
-        { timeout: 15000 },
+        { timeout: 30000, maxWait: 10000 },
       );
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {

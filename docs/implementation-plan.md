@@ -1,6 +1,6 @@
 # Jewelry materials catalog and inventory — implementation plan
 
-Status: implementation authorized on 2026-10-28. The user waived further UX revision. M1 technical foundation is deployed and verified; M2 authentication and reference data is implemented and locally verified, awaiting review and release; detailed proposed rules remain documented defaults to refine during their feature milestones.
+Status: implementation authorized on 2026-10-28. The user waived further UX revision. M1 technical foundation is deployed and verified; M2 authentication and reference data is deployed and the user confirmed administrator provisioning works; M3 catalog implementation and real Cloudinary upload/delivery/deletion are verified, awaiting release; detailed proposed rules remain documented defaults to refine during their feature milestones.
 
 Updated: 2026-10-29.
 
@@ -313,9 +313,9 @@ Workstream responsibilities:
 
 Do not ask again about unit-conversion deferral, one warehouse per order, shared SKU prices across warehouses, cancellation before fulfillment, or sold-out visibility: those decisions are confirmed.
 
-M1 is complete: the prototype release passed checks, migrations, Render/Netlify deployment and health checks in [run 40853149068](https://github.com/rsabadash/hhs/actions/runs/40853149068). M2 is the current milestone; see [admin and reference data](admin-reference.md). Implement subsequent milestones in the order above. Skipping UX revision does not mean implementing every feature at once.
+M1 is complete: the prototype release passed checks, migrations, Render/Netlify deployment and health checks in [run 40853149068](https://github.com/rsabadash/hhs/actions/runs/40853149068). M2 is deployed and the administrator account is working. M3 is the current milestone; see [catalog management](catalog.md). Implement subsequent milestones in the order above. Skipping UX revision does not mean implementing every feature at once.
 
-Target repository: `https://github.com/rsabadash/hhs`. Neon, Render and Netlify are connected and the GitHub prototype environment is configured. Releases are manually dispatched after checks. M2 changes must pass verification before a new release; Cloudinary integration starts in M3.
+Target repository: `https://github.com/rsabadash/hhs`. Neon, Render and Netlify are connected and the GitHub prototype environment is configured. Releases are manually dispatched after checks. M3 local checks and the real Cloudinary upload/delivery/deletion smoke have passed. Release remains; the hosted API needs the Cloudinary environment variables before uploads can be used.
 
 See [foundation status](foundation.md) for delivered checks and remaining setup. Early unvalidated drafts are preserved locally under `.local/early-drafts` and are not shipped as completed features.
 

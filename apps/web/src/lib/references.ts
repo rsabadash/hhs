@@ -37,7 +37,7 @@ export const kindLabels = {
 };
 export async function writeAdmin(
   path: string,
-  method: 'POST' | 'PUT',
+  method: 'POST' | 'PUT' | 'DELETE',
   body: unknown,
 ) {
   const response = await fetch(`/api/admin/${path}`, {
@@ -52,9 +52,14 @@ export async function writeAdmin(
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign('/admin/login?expired=1');
     throw new Error(
-      typeof data.message === 'string'
-        ? data.message
-        : 'Не вдалося зберегти дані.',
+      Array.isArray(data.fields) && data.fields.length
+        ? data.fields
+            .slice(0, 3)
+            .map((field: { message: string }) => field.message)
+            .join(' ')
+        : typeof data.message === 'string'
+          ? data.message
+          : 'Не вдалося зберегти дані.',
     );
   }
   return data;

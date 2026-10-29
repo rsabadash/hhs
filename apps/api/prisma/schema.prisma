@@ -169,6 +169,7 @@ model Product {
   images      Image[]
 
   @@index([categoryId])
+  @@index([name, id])
   @@index([createdAt, id])
 }
 
@@ -379,4 +380,12 @@ model StockMovement {
 
   @@unique([orderItemId, kind])
   @@index([variantId, warehouseId, createdAt])
+}
+
+// Deferred media deletion and reservations for uploads whose response may time out.
+model ImageCleanup {
+  publicId  String   @id
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([createdAt])
 }

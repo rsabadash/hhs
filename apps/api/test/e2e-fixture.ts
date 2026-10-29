@@ -29,6 +29,21 @@ export async function adminFixture() {
       );
     },
     async cleanup() {
+      await pool.query(
+        'DELETE FROM "Image" WHERE "productId" IN (SELECT id FROM "Product" WHERE name LIKE $1)',
+        [`%${marker}%`],
+      );
+      await pool.query(
+        'DELETE FROM "Variant" WHERE "productId" IN (SELECT id FROM "Product" WHERE name LIKE $1)',
+        [`%${marker}%`],
+      );
+      await pool.query('DELETE FROM "Product" WHERE name LIKE $1', [
+        `%${marker}%`,
+      ]);
+      await pool.query(
+        'DELETE FROM "Tag" WHERE name LIKE $1 AND NOT EXISTS (SELECT 1 FROM "ProductTag" WHERE "tagId"="Tag".id)',
+        [`%${marker}%`],
+      );
       await pool.query('DELETE FROM "Admin" WHERE email=$1', [email]);
       await pool.query('DELETE FROM "LoginThrottle" WHERE key=$1', [
         `email:${createHash('sha256').update(email).digest('hex')}`,

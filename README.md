@@ -1,6 +1,6 @@
 # HHS — materials for jewelry
 
-Ukrainian catalog and inventory application for one business. Next.js frontend, NestJS API, PostgreSQL with Prisma, UAH prices. The deployed M1 foundation has passed a complete release. M2 adds admin authentication and searchable reference management; see the [admin guide](docs/admin-reference.md). Product management, images, supplies, inventory counts, and orders remain in the [implementation plan](docs/implementation-plan.md).
+Ukrainian catalog and inventory application for one business. Next.js frontend, NestJS API, PostgreSQL with Prisma, UAH prices. The deployed M1 foundation has passed a complete release. M2 adds admin authentication and searchable reference management; see the [admin guide](docs/admin-reference.md). M3 adds product/SKU management, filters, tags and Cloudinary galleries; see the [catalog guide](docs/catalog.md). Supplies, inventory counts, public shopping pages and orders remain in the [implementation plan](docs/implementation-plan.md).
 
 ## Local setup
 

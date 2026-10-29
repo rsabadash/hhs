@@ -1,13 +1,15 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.js';
 import { readConfig } from './config.js';
 
 async function main() {
   const { PORT } = readConfig();
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useBodyParser('json', { limit: '5mb' });
   app.use(helmet());
   app.use(cookieParser());
   app.use(
