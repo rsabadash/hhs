@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:ui": "playwright test --config playwright.ui.config.ts",
     "db:generate": "pnpm --filter @hhs/api db:generate",
     "db:migrate": "pnpm --filter @hhs/api db:migrate",
     "db:seed": "pnpm --filter @hhs/api db:seed",

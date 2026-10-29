@@ -7,6 +7,7 @@ import type { CatalogProduct, CatalogVariant } from '@/lib/catalog';
 import ReferencePicker from './reference-picker';
 import ProductAttributes from './product-attributes';
 import ProductGallery from './product-gallery';
+import { imageData } from '@/lib/image-upload';
 const newVariant = (): CatalogVariant => ({
   name: '',
   sku: '',
@@ -26,6 +27,10 @@ export default function ProductEditor({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [persisted, setPersisted] = useState(initial);
+  const [file, setFile] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState(0);
+  const [imageScope, setImageScope] = useState('');
   const [name, setName] = useState(initial?.name || '');
   const [description, setDescription] = useState(initial?.description || '');
   const [category, setCategory] = useState(initial?.category || null);
@@ -47,7 +52,7 @@ export default function ProductEditor({
     <section className="catalog-page">
       <Link href="/admin/products">← Товари</Link>
       <p className="eyebrow">Каталог · UAH</p>
-      <h1>{initial ? 'Редагувати товар' : 'Новий товар'}</h1>
+      <h1>{persisted ? 'Редагувати товар' : 'Новий товар'}</h1>
       <p className="muted">
         Спільні властивості описують товар. Кожен варіант має власний SKU та
         одиницю продажу.
@@ -58,16 +63,24 @@ export default function ProductEditor({
           setBusy(true);
           setError('');
           setSaved(false);
+          let productSaved = false;
           try {
-            const data = await writeAdmin(
-              initial ? `products/${initial.id}` : 'products',
-              initial ? 'PUT' : 'POST',
+            // Validate/read the file before creating a product. Upload only once
+            // its product and variant IDs exist.
+            const upload = file ? await imageData(file) : null;
+            const imageVariant =
+              imageScope === '' ? null : variants[Number(imageScope)];
+            if (upload && (archived || imageVariant?.archivedAt))
+              throw Error('Оберіть активний товар або варіант для зображення.');
+            const data: CatalogProduct = await writeAdmin(
+              persisted ? `products/${persisted.id}` : 'products',
+              persisted ? 'PUT' : 'POST',
               {
                 name,
                 description,
                 categoryId: category?.id || '',
                 archived,
-                updatedAt: initial?.updatedAt,
+                updatedAt: persisted?.updatedAt,
                 tags: tags
                   .split(',')
                   .map((t) => t.trim())
@@ -91,11 +104,43 @@ export default function ProductEditor({
                 })),
               },
             );
+            productSaved = true;
+            setPersisted(data);
+            // Preserve form order and IDs on an upload failure so retrying
+            // updates this product rather than creating duplicate SKUs.
+            const matchingVariant = (sku: string) =>
+              data.variants.find(
+                (v) => v.sku === sku.trim().normalize('NFC').toUpperCase(),
+              );
+            setVariants(
+              variants.map((v) => ({ ...v, id: matchingVariant(v.sku)?.id })),
+            );
+            if (upload) {
+              const variantId = imageVariant
+                ? matchingVariant(imageVariant.sku)?.id
+                : null;
+              if (imageVariant && !variantId)
+                throw Error('Варіант для зображення не знайдено.');
+              await writeAdmin(`products/${data.id}/images`, 'POST', {
+                data: upload,
+                alt: (imageVariant
+                  ? `${name} · ${imageVariant.name}`
+                  : name
+                ).slice(0, 250),
+                variantId,
+              });
+              setFile(null);
+              setFileKey((key) => key + 1);
+            }
             setSaved(true);
             router.replace(`/admin/products/${data.id}`);
             router.refresh();
           } catch (e) {
-            setError((e as Error).message);
+            setError(
+              productSaved
+                ? `Товар збережено, але зображення не завантажено. ${(e as Error).message} Натисніть «Зберегти товар», щоб повторити, або приберіть файл.`
+                : (e as Error).message,
+            );
           } finally {
             setBusy(false);
           }
@@ -240,9 +285,17 @@ export default function ProductEditor({
                 <button
                   type="button"
                   disabled={variants.length === 1}
-                  onClick={() =>
-                    setVariants(variants.filter((_, n) => n !== i))
-                  }
+                  onClick={() => {
+                    setVariants(variants.filter((_, n) => n !== i));
+                    if (imageScope !== '') {
+                      const scope = Number(imageScope);
+                      if (scope === i) {
+                        setFile(null);
+                        setFileKey((key) => key + 1);
+                        setImageScope('');
+                      } else if (scope > i) setImageScope(String(scope - 1));
+                    }
+                  }}
                 >
                   Прибрати варіант
                 </button>
@@ -257,6 +310,62 @@ export default function ProductEditor({
             Додати варіант
           </button>
           <div className="catalog-save">
+            <div className="catalog-card">
+              <h2>Додати зображення</h2>
+              <p className="muted">
+                Оберіть фото — воно завантажиться разом зі збереженням товару.
+                JPEG, PNG або WebP до 3 МБ.
+              </p>
+              {!imagesConfigured && (
+                <p role="status">
+                  Cloudinary ще не налаштовано. Збереження товарів доступне.
+                </p>
+              )}
+              <div className="catalog-grid">
+                <label>
+                  Фото до збереження
+                  <input
+                    key={fileKey}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={!imagesConfigured || archived}
+                    onChange={(e) => {
+                      setFile(e.target.files?.[0] || null);
+                      setSaved(false);
+                    }}
+                  />
+                </label>
+                <label>
+                  Зображення для
+                  <select
+                    value={imageScope}
+                    disabled={!imagesConfigured || archived}
+                    onChange={(e) => setImageScope(e.target.value)}
+                  >
+                    <option value="">Спільне для товару</option>
+                    {variants.map(
+                      (v, i) =>
+                        !v.archivedAt && (
+                          <option key={i} value={String(i)}>
+                            {v.sku || `Варіант ${i + 1}`} · {v.name}
+                          </option>
+                        ),
+                    )}
+                  </select>
+                </label>
+              </div>
+              {file && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFile(null);
+                    setFileKey((key) => key + 1);
+                  }}
+                >
+                  Прибрати файл
+                </button>
+              )}
+            </div>
             {error && (
               <p role="alert" className="error">
                 {error}
@@ -269,12 +378,8 @@ export default function ProductEditor({
           </div>
         </fieldset>
       </form>
-      {initial ? (
-        <ProductGallery product={initial} configured={imagesConfigured} />
-      ) : (
-        <p className="catalog-card">
-          Збережіть товар, щоб завантажити його зображення.
-        </p>
+      {persisted && (
+        <ProductGallery product={persisted} configured={imagesConfigured} />
       )}
     </section>
   );

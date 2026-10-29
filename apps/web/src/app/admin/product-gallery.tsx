@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { CatalogImage, CatalogProduct } from '@/lib/catalog';
 import { writeAdmin } from '@/lib/references';
+import { imageData } from '@/lib/image-upload';
 export default function ProductGallery({
   product,
   configured,
@@ -68,17 +69,7 @@ export default function ProductGallery({
           setError('');
           setNotice('');
           try {
-            if (
-              file.size > 3 * 1024 * 1024 ||
-              !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
-            )
-              throw Error('Оберіть JPEG, PNG або WebP до 3 МБ.');
-            const data = await new Promise<string>((resolve, reject) => {
-              const r = new FileReader();
-              r.onload = () => resolve(String(r.result));
-              r.onerror = () => reject(Error('Не вдалося прочитати файл.'));
-              r.readAsDataURL(file);
-            });
+            const data = await imageData(file);
             const image = await writeAdmin(
               `products/${product.id}/images`,
               'POST',

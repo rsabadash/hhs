@@ -42,6 +42,8 @@ The authenticated frontend sends a JSON data URL through the same-origin Next pr
 
 Images can be shared or assigned to one variant of the same product. Edit alt text, scope and numeric order, then save that image. Lower order numbers display first; ties use ID order. The gallery preview displays a variant's own images when present and shared images otherwise. Deleting the final variant image restores shared fallback.
 
+To include an image in the first save, use **Додати зображення** immediately above **Зберегти товар**. Select a file and choose the product or a variant, then save once. This also works when editing a product. The product is saved before the image upload; if uploading fails, the selected file stays available for retry and saving again updates the same product. Additional images, alt text, ordering and removal remain available in the saved product's gallery.
+
 Upload reservations and failed deletions are stored in `ImageCleanup`. An upload that succeeds but loses its response or database transaction stays eligible for cleanup. Successful attachments remove their reservation. Deletion detaches the database record transactionally, attempts provider deletion immediately, and retains a retry record on failure. Never delete records from this queue manually without checking Cloudinary.
 
 Retry abandoned uploads/deletions older than 24 hours with:
