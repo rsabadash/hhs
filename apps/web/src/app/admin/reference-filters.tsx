@@ -1,16 +1,12 @@
 'use client';
 import { useState } from 'react';
 import ListControls from '@/components/list-controls';
-import {
-  kindLabels,
-  type ReferenceKind,
-  type Reference,
-} from '@/lib/references';
+import { type ReferenceKind, type Reference } from '@/lib/references';
 import ReferencePicker from './reference-picker';
 import type { Selection } from '@/lib/catalog';
 const keys: Record<ReferenceKind, string[]> = {
   categories: ['parentId'],
-  attributes: ['kind'],
+  attributes: [],
   units: ['allowsFraction'],
   suppliers: ['hasContact'],
   warehouses: ['hasAddress'],
@@ -79,19 +75,6 @@ function ReferenceFilterFields({ kind, query, parent }: Props) {
           />
         </>
       )}
-      {kind === 'attributes' ? (
-        <label>
-          Тип
-          <select name="kind" defaultValue={params.get('kind') || ''}>
-            <option value="">Усі типи</option>
-            {Object.entries(kindLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-      ) : null}
       {kind === 'units' ? (
         <label>
           Кількість

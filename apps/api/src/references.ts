@@ -1,4 +1,5 @@
 import { acquireWriteLock } from './write-lock.js';
+import { saveAttribute } from './attribute-editor.js';
 import {
   BadRequestException,
   Body,
@@ -165,7 +166,17 @@ export class ReferenceService {
           include: { parent: { select: { id: true, name: true } } },
         })
       : kind === 'attributes'
-        ? this.db.attribute.findUnique({ where })
+        ? this.db.attribute.findUnique({
+            where,
+            include: {
+              values: {
+                orderBy: [{ label: 'asc' }, { id: 'asc' }],
+                include: {
+                  _count: { select: { products: true, variants: true } },
+                },
+              },
+            },
+          })
         : kind === 'attribute-values'
           ? this.db.attributeValue.findUnique({ where })
           : kind === 'units'
@@ -243,6 +254,8 @@ export class ReferenceService {
                 : tx.supplier.create({ data });
             }
             case 'attributes': {
+              if (input && typeof input === 'object' && 'values' in input)
+                return saveAttribute(tx, id, input);
               const inputData = parse(attributeInput, input);
               const data = {
                 ...inputData,

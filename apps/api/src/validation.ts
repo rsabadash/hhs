@@ -70,6 +70,40 @@ export const attributeInput = z
     path: ['measurementSymbol'],
     message: 'Одиниця вимірювання доступна лише для числових атрибутів.',
   });
+// The inline editor sends labels, retaining IDs for existing product links.
+export const attributeEditorInput = z
+  .object({
+    name,
+    values: z
+      .array(z.object({ id: uuid.optional(), label: name }).strict())
+      .max(1000),
+    removedValueIds: z.array(uuid).max(1000).default([]),
+  })
+  .strict()
+  .superRefine((input, ctx) => {
+    const labels = new Set<string>();
+    const ids = new Set<string>();
+    for (const [index, value] of input.values.entries()) {
+      const label = value.label.toLocaleLowerCase('uk');
+      if (labels.has(label))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['values', index, 'label'],
+          message: 'Значення не повинні повторюватися.',
+        });
+      labels.add(label);
+      if (
+        value.id &&
+        (ids.has(value.id) || input.removedValueIds.includes(value.id))
+      )
+        ctx.addIssue({
+          code: 'custom',
+          path: ['values', index, 'id'],
+          message: 'Значення вказано кілька разів.',
+        });
+      if (value.id) ids.add(value.id);
+    }
+  });
 export const valueInput = z
   .object({
     attributeId: uuid,

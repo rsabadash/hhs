@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   attributeInput,
+  attributeEditorInput,
   listQuery,
   parse,
   unitInput,
@@ -8,6 +9,36 @@ import {
 } from './validation.js';
 import { randomUUID } from 'node:crypto';
 describe('reference validation', () => {
+  it('validates inline attribute values and rejects duplicate labels and IDs', () => {
+    const id = randomUUID();
+    expect(
+      parse(attributeEditorInput, {
+        name: ' Діаметр ',
+        values: [{ label: ' 4 мм ' }, { label: '6 мм' }],
+      }),
+    ).toEqual({
+      name: 'Діаметр',
+      values: [{ label: '4 мм' }, { label: '6 мм' }],
+      removedValueIds: [],
+    });
+    for (const data of [
+      { values: [{ label: 'Золото' }, { label: ' золото ' }] },
+      { values: [{ label: ' ' }] },
+      {
+        values: [
+          { id, label: '4' },
+          { id, label: '6' },
+        ],
+      },
+      { values: [{ id, label: '4' }], removedValueIds: [id] },
+      {
+        values: Array.from({ length: 1001 }, (_, i) => ({ label: String(i) })),
+      },
+    ])
+      expect(() =>
+        parse(attributeEditorInput, { name: 'Діаметр', ...data }),
+      ).toThrow();
+  });
   it('rejects unbounded pagination and unknown filters', () => {
     for (const query of [
       { page: '0' },

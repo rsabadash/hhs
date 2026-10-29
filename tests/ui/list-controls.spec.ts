@@ -138,7 +138,6 @@ const cases = [
     key: 'parentId',
     value: 'root',
   },
-  { path: '/admin/attributes', label: 'Тип', key: 'kind', value: 'NUMBER' },
   {
     path: '/admin/units',
     label: 'Кількість',

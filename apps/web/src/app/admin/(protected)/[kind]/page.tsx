@@ -24,7 +24,6 @@ export default async function ReferencesPage({
     'sort',
     'parentId',
     'attributeId',
-    'kind',
     'allowsFraction',
     'hasContact',
     'hasAddress',

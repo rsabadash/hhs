@@ -42,9 +42,11 @@ async function proxy(
           (request.method === 'POST' &&
           /^products\/[a-f0-9-]{36}\/images$/.test(path)
             ? 4250000
-            : /^(products|inventory|orders)(\/.*)?$/.test(path)
-              ? 262144
-              : 32768)
+            : /^references\/attributes(\/[a-f0-9-]{36})?$/.test(path)
+              ? 1048576
+              : /^(products|inventory|orders)(\/.*)?$/.test(path)
+                ? 262144
+                : 32768)
         ) {
           await reader.cancel();
           return jsonError('Запит завеликий.', 413);

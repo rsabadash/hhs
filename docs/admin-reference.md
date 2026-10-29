@@ -10,12 +10,14 @@ Each reference list has search at the top, ascending/descending name sorting bes
 
 Categories can be browsed through **Підкатегорії** or by choosing all, root or child categories in the filter panel. The category editor includes a paginated parent-category search. Moving a category under itself or a descendant is rejected, including concurrent moves.
 
-Additional filters: attribute kind, whole/fractional units, suppliers with/without contacts, and warehouses with/without an address. Attribute values are scoped to their attribute and searchable by label.
+Additional filters: whole/fractional units, suppliers with/without contacts, and warehouses with/without an address. Attribute values are scoped to their attribute and searchable by label.
 
 Use **Додати запис**, complete the fields, then **Зберегти**. Use **Редагувати** to update an existing record. Reference deletion is deliberately unavailable: these records will be referenced by catalog and inventory history.
 
-- Attribute kinds are `CHOICE`, `NUMBER` and `TEXT`. Choice/text values use a label. Number values use an exact decimal with up to 12 integer digits and 4 fractional digits; the label is canonicalized from that number. The UI accepts a decimal comma and converts it before sending.
-- Attribute measurement labels such as `мм` are separate from stock units such as `шт`. Attribute kind and measurement label cannot change once values exist.
+- Attributes have a name and a list of values. In **Атрибути**, add a name, fill **Значення 1**, then use **Додати значення** for additional rows. Save everything with **Зберегти**. **Значення (N)** and **Редагувати** reopen the same form.
+- Include measurements in the value label, for example `4 мм`, `6 мм`, or `40 см`. There is no type selector. Values must be nonempty and unique within the attribute, ignoring case and surrounding spaces.
+- Unused values can be edited or removed. Values attached to products or variants are read-only; add another value instead. The attribute and values save atomically. Explicit removals preserve any other values added by another administrator while the form was open.
+- Older numeric attributes retain their displayed measurement text and value IDs when saved through the new form. Product/variant assignments and filters keep using those IDs. No schema migration is required.
 - Unit precision is whole quantities or up to 3 decimal places, matching the inventory schema. Symbol and precision cannot change once a SKU uses the unit.
 - An attribute value already attached to a product or variant cannot be changed to mean something else. Create a new value instead.
 
@@ -41,7 +43,7 @@ Recovery updates the password and revokes all of that administrator's existing s
 
 The existing `DATABASE_URL` on Render and server-only `API_URL` on Netlify are sufficient. Render must have `NODE_ENV=production` so the session cookie is Secure. All deployed browser access must use HTTPS. Keep the API free of permissive CORS rules.
 
-The browser uses same-origin `/api/admin/*` routes in Next.js. This proxy verifies write origins against the request's Host and protocol, requires JSON and a custom CSRF header, caps bodies at 32 KiB, and forwards only the required headers. The Nest API separately requires the custom header and JSON for writes, permits no CORS, and authenticates every reference read/write. Authenticated responses are `no-store`. The proxy never accepts arbitrary upstream URLs.
+The browser uses same-origin `/api/admin/*` routes in Next.js. This proxy verifies write origins against the request's Host and protocol, requires JSON and a custom CSRF header, caps ordinary reference bodies at 32 KiB and batched attribute edits at 1 MiB, and forwards only the required headers. The Nest API separately requires the custom header and JSON for writes, permits no CORS, and authenticates every reference read/write. Authenticated responses are `no-store`. The proxy never accepts arbitrary upstream URLs.
 
 Sessions contain random 256-bit tokens in a host-only, HttpOnly, SameSite=Strict cookie. Only SHA-256 token hashes are stored in PostgreSQL. Sessions expire after eight hours; successful sign-in replaces the current browser's previous token, and sign-out revokes it. Password recovery revokes all sessions for that account.
 
@@ -66,11 +68,13 @@ Writes require `Content-Type: application/json` and `x-hhs-csrf: 1`. Browser wri
 | Kind               | Editable fields                                                                    |
 | ------------------ | ---------------------------------------------------------------------------------- |
 | `categories`       | `name`, `parentId` (UUID or null)                                                  |
-| `attributes`       | `name`, `kind`, `measurementSymbol` (number attributes only; optional)             |
+| `attributes`       | `name`, `values[{id?,label}]`, `removedValueIds[]` (optional)                      |
 | `attribute-values` | `attributeId`, `label`, `numericValue` (decimal string for NUMBER, otherwise null) |
 | `units`            | `name`, `symbol`, `allowsFraction` (boolean)                                       |
 | `warehouses`       | `name`, `address`                                                                  |
 | `suppliers`        | `name`, `email`, `phone`                                                           |
+
+`GET /admin/references/attributes/:id` includes all values and product/variant usage counts. The inline editor accepts up to 1000 submitted values; existing IDs must belong to the attribute. Omitted existing values are preserved, and only explicit `removedValueIds` are deleted. Legacy payloads with `kind` and `measurementSymbol` and the individual `attribute-values` API remain supported for compatibility; the admin editor uses labels only.
 
 List query parameters: `q` (up to 100 characters), `page` (positive integer), `pageSize` (1–50), `sort` (`asc`/`desc`). Optional filters: `parentId` (UUID or `root`), `kind` (`NUMBER`/`CHOICE`/`TEXT`), `allowsFraction`, `hasAddress`, `hasContact` (the last three are `true`/`false`). Attribute-value lists require `attributeId`. Unknown query/body fields are rejected. UUIDs are validated before querying.
 

@@ -53,6 +53,32 @@ describe('admin proxy security', () => {
     );
     expect(fetch).not.toHaveBeenCalled();
   });
+  it('allows a bounded batch of attribute values without raising other reference limits', async () => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ id: 'attribute' }));
+    vi.stubGlobal('fetch', fetch);
+    const body = JSON.stringify({
+      name: 'Діаметр',
+      values: Array.from({ length: 1000 }, (_, index) => ({
+        label: `${index} мм натуральні перлини`,
+      })),
+    });
+    expect(Buffer.byteLength(body)).toBeGreaterThan(32768);
+    const attributeContext = {
+      params: Promise.resolve({ path: ['references', 'attributes'] }),
+    };
+    expect((await POST(request({}, body), attributeContext)).status).toBe(200);
+    expect(
+      (await POST(request({}, 'x'.repeat(1048577)), attributeContext)).status,
+    ).toBe(413);
+    expect(
+      (
+        await POST(request({}, body), {
+          params: Promise.resolve({ path: ['references', 'units'] }),
+        })
+      ).status,
+    ).toBe(413);
+    expect(fetch).toHaveBeenCalledOnce();
+  });
   it('rejects unknown and traversal paths without contacting the API', async () => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);

@@ -68,23 +68,54 @@ test('admin creates, edits and finds reference data, then signs out', async ({
       page.getByRole('heading', { name: 'Атрибути', exact: true }),
     ).toBeVisible();
     await add(page, `Діаметр ${suffix}`);
-    await page.getByLabel('Тип значень').selectOption('NUMBER');
-    await page.getByLabel('Одиниця вимірювання').fill('мм');
-    await save();
+    await expect(page.getByLabel('Тип значень')).toHaveCount(0);
+    await page.getByLabel('Значення 1', { exact: true }).fill('4 мм');
     await page
-      .getByRole('listitem')
-      .filter({ hasText: `Діаметр ${suffix}` })
-      .getByRole('link', { name: /Значення/ })
+      .getByRole('button', { name: 'Додати значення', exact: true })
       .click();
+    await page.getByLabel('Значення 2', { exact: true }).fill('6 мм');
+    await page
+      .getByRole('button', { name: 'Додати значення', exact: true })
+      .click();
+    await page.getByLabel('Значення 3', { exact: true }).fill('8 мм');
+    await checkAccessibility(page);
+    await page.screenshot({
+      path: test.info().outputPath('attribute-values.png'),
+      fullPage: true,
+    });
+    await page.getByLabel('Значення 3', { exact: true }).fill('4 мм');
+    await page.getByRole('button', { name: 'Зберегти', exact: true }).click();
     await expect(
-      page.getByRole('heading', { name: 'Значення атрибута', exact: true }),
+      page
+        .getByRole('alert')
+        .filter({ hasText: 'Значення не повинні повторюватися.' }),
     ).toBeVisible();
-    await page.getByRole('button', { name: 'Додати запис' }).click();
-    await page.getByLabel(/Числове значення/).fill('6');
+    await page.getByLabel('Значення 3', { exact: true }).fill('8 мм');
     await save();
-    await expect(
-      page.getByRole('heading', { name: '6', exact: true }),
-    ).toBeVisible();
+    const attributeRow = page
+      .getByRole('listitem')
+      .filter({ hasText: `Діаметр ${suffix}` });
+    await attributeRow
+      .getByRole('button', { name: 'Значення (3)', exact: true })
+      .click();
+    await expect(page.getByLabel('Значення 1', { exact: true })).toHaveValue(
+      '4 мм',
+    );
+    await expect(page.getByLabel('Значення 2', { exact: true })).toHaveValue(
+      '6 мм',
+    );
+    await page.getByLabel('Значення 2', { exact: true }).fill('7 мм');
+    await page
+      .getByRole('button', { name: 'Прибрати значення 3', exact: true })
+      .click();
+    await save();
+    await attributeRow
+      .getByRole('button', { name: 'Значення (2)', exact: true })
+      .click();
+    await expect(page.getByLabel('Значення 2', { exact: true })).toHaveValue(
+      '7 мм',
+    );
+    await page.getByRole('button', { name: 'Скасувати', exact: true }).click();
     await page.getByRole('link', { name: 'Склади', exact: true }).click();
     await expect(
       page.getByRole('heading', { name: 'Склади', exact: true }),

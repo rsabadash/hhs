@@ -3,19 +3,18 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  kindLabels,
   sections,
   type Reference,
   type ReferenceKind,
   type ReferenceList,
 } from '@/lib/references';
 import ReferenceForm from './reference-form';
+import AttributeForm from './attribute-form';
 import ReferenceFilters from './reference-filters';
 
 function description(kind: ReferenceKind, item: Reference) {
   if (kind === 'categories') return item.parent?.name || 'Коренева категорія';
-  if (kind === 'attributes')
-    return `${kindLabels[item.kind!]}${item.measurementSymbol ? ` · ${item.measurementSymbol}` : ''}`;
+  if (kind === 'attributes') return `Значень: ${item._count?.values || 0}`;
   if (kind === 'units')
     return `${item.symbol} · ${item.allowsFraction ? 'Дробова кількість' : 'Ціла кількість'}`;
   if (kind === 'warehouses') return item.address || 'Адресу не вказано';
@@ -61,10 +60,7 @@ export default function ReferenceManager({
           <p className="eyebrow">Керування даними</p>
           <h1>{sections[kind]}</h1>
           {attribute ? (
-            <p className="muted">
-              {attribute.name} · {kindLabels[attribute.kind!]}{' '}
-              {attribute.measurementSymbol}
-            </p>
+            <p className="muted">{attribute.name}</p>
           ) : (
             <p className="muted">
               {kind === 'categories'
@@ -99,7 +95,18 @@ export default function ReferenceManager({
           Запис збережено.
         </p>
       ) : null}
-      {editor ? (
+      {editor && kind === 'attributes' ? (
+        <AttributeForm
+          key={editor === 'new' ? 'new' : editor.id}
+          record={editor === 'new' ? undefined : editor}
+          onCancel={() => setEditor(null)}
+          onSaved={() => {
+            setEditor(null);
+            setSaved(true);
+            router.refresh();
+          }}
+        />
+      ) : editor ? (
         <ReferenceForm
           key={editor === 'new' ? 'new' : editor.id}
           kind={kind}
@@ -132,9 +139,15 @@ export default function ReferenceManager({
                   </Link>
                 ) : null}
                 {kind === 'attributes' ? (
-                  <Link href={`/admin/attribute-values?attributeId=${item.id}`}>
+                  <button
+                    onClick={() => {
+                      setSaved(false);
+                      setEditor(item);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
                     Значення ({item._count?.values || 0})
-                  </Link>
+                  </button>
                 ) : null}
                 <button
                   aria-label={`Редагувати ${item.name || item.label}`}

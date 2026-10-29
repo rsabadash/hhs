@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import {
-  kindLabels,
   writeAdmin,
   type Reference,
   type ReferenceKind,
@@ -107,7 +106,6 @@ export default function ReferenceForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
-  const [type, setType] = useState(record?.kind || 'CHOICE');
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const numeric = kind === 'attribute-values' && attribute?.kind === 'NUMBER';
@@ -142,13 +140,6 @@ export default function ReferenceForm({
             data = { ...data, address: text('address') };
           if (kind === 'suppliers')
             data = { ...data, email: text('email'), phone: text('phone') };
-          if (kind === 'attributes')
-            data = {
-              ...data,
-              kind: type,
-              measurementSymbol:
-                type === 'NUMBER' ? text('measurementSymbol') || null : null,
-            };
           if (kind === 'attribute-values')
             data = {
               attributeId: attribute?.id,
@@ -278,39 +269,6 @@ export default function ReferenceForm({
                 maxLength={60}
               />
             </label>
-          </>
-        ) : null}
-        {kind === 'attributes' ? (
-          <>
-            <label>
-              Тип значень
-              <select
-                name="kind"
-                value={type}
-                onChange={(e) => setType(e.target.value as typeof type)}
-              >
-                {Object.entries(kindLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {type === 'NUMBER' ? (
-              <label>
-                Одиниця вимірювання
-                <input
-                  name="measurementSymbol"
-                  defaultValue={record?.measurementSymbol || ''}
-                  maxLength={20}
-                  placeholder="мм, см"
-                />
-              </label>
-            ) : null}
-            <p className="muted">
-              Після створення додайте допустимі значення. Тип і одиниця
-              фіксуються після додавання першого значення.
-            </p>
           </>
         ) : null}
         {error ? (

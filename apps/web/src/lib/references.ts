@@ -30,11 +30,6 @@ export type ReferenceList = {
   page: number;
   pageSize: number;
 };
-export const kindLabels = {
-  CHOICE: 'Вибір зі списку',
-  NUMBER: 'Число',
-  TEXT: 'Текст',
-};
 export async function writeAdmin(
   path: string,
   method: 'POST' | 'PUT' | 'DELETE',
