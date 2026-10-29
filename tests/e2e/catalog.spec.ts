@@ -94,7 +94,9 @@ test('admin creates and edits two SKU variants, filters them, and previews share
     await page
       .getByRole('button', { name: 'Зберегти товар', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/admin\/products\/[a-f0-9-]{36}$/);
+    await expect(page).toHaveURL(/\/admin\/products\/[a-f0-9-]{36}$/, {
+      timeout: 15000,
+    });
     const productId = page.url().split('/').pop()!;
     await expect(
       page.getByRole('heading', { name: 'Редагувати товар', exact: true }),

@@ -1,3 +1,4 @@
+import { checkAccessibility } from './accessibility';
 import { test, expect } from '@playwright/test';
 import { adminFixture } from '../../apps/api/test/e2e-fixture';
 import { galleryFixture } from '../../apps/api/test/storefront-images';
@@ -70,7 +71,8 @@ test('customer finds a received published SKU, selects variants and prepares an 
     const body = {
       name: `Кільце-конектор ${m}`,
       categoryId: child.id,
-      description: 'Для сережок і підвісок. Покриття золотистого кольору.',
+      description:
+        'Для сережок і підвісок. <script>window.hhsInjected = true</script>',
       tags: [m],
       attributes: [],
       archived: false,
@@ -163,12 +165,17 @@ test('customer finds a received published SKU, selects variants and prepares an 
     const card = page.locator('.product-card').filter({ hasText: body.name });
     await expect(card).toBeVisible({ timeout: 15000 });
     await expect(card).toContainText('25,50');
+    await checkAccessibility(page);
     await page.screenshot({
       path: testInfo.outputPath('catalog.png'),
       fullPage: true,
     });
     await card.getByRole('link').click();
     await expect(page.locator('.sku')).toContainText(smallVariant.sku);
+    await expect(
+      page.getByText(body.description, { exact: true }),
+    ).toBeVisible();
+    expect(await page.evaluate(() => 'hhsInjected' in window)).toBe(false);
     await expect(
       page.getByRole('img', { name: 'Спільне фото', exact: true }),
     ).toBeVisible();
@@ -209,6 +216,7 @@ test('customer finds a received published SKU, selects variants and prepares an 
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
     ).toBe(true);
+    await checkAccessibility(page);
     await page.screenshot({
       path: testInfo.outputPath('product.png'),
       fullPage: true,

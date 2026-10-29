@@ -11,7 +11,9 @@
     "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
     "db:admin-reset": "tsx --env-file-if-exists=.env prisma/reset-admin.ts",
     "images:cleanup": "tsx --env-file-if-exists=.env prisma/cleanup-images.ts",
-    "images:smoke": "tsx --env-file-if-exists=.env prisma/smoke-images.ts"
+    "images:smoke": "tsx --env-file-if-exists=.env prisma/smoke-images.ts",
+    "db:backup": "node scripts/recovery-cli.mjs backup",
+    "db:restore": "node scripts/recovery-cli.mjs restore"
   },
   "dependencies": {
     "@nestjs/common": "12.3.2",

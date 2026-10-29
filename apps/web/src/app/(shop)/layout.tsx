@@ -8,7 +8,7 @@ export default function ShopLayout({
   return (
     <div className="shop">
       <header className="site-header">
-        <Link className="brand" href="/" aria-label="HHS — головна">
+        <Link className="brand" href="/">
           HHS<span>матеріали для прикрас</span>
         </Link>
         <Link href="/">Каталог</Link>

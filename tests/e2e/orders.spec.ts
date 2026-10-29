@@ -1,7 +1,9 @@
+import { checkAccessibility } from './accessibility';
 import { test, expect } from '@playwright/test';
 import { adminFixture } from '../../apps/api/test/e2e-fixture';
 test('admin reviews, creates, cancels and fulfills orders with stock history', async ({
   page,
+  request,
 }, testInfo) => {
   test.setTimeout(180000);
   page.setDefaultTimeout(15000);
@@ -102,6 +104,23 @@ test('admin reviews, creates, cancels and fulfills orders with stock history', a
     await post(`inventory/supplies/${supply.id}/receive`, {
       revision: supply.revision,
     });
+    async function publicStock(expected: boolean) {
+      const response = await request.get(
+        `http://127.0.0.1:4000/catalog/${p.id}`,
+      );
+      expect(response.ok()).toBe(true);
+      const product = await response.json();
+      expect(product.variants).toHaveLength(2);
+      expect(
+        product.variants.every(
+          (v: { inStock: boolean }) => v.inStock === expected,
+        ),
+      ).toBe(true);
+      expect(JSON.stringify(product)).not.toMatch(
+        /unitCost|warehouseId|customerName|passwordHash/,
+      );
+    }
+    await publicStock(true);
     const addSku = async (sku: string) => {
       await page
         .getByRole('button', { name: 'Додати SKU', exact: true })
@@ -142,6 +161,7 @@ test('admin reviews, creates, cancels and fulfills orders with stock history', a
       await expect(page.locator('.order-total')).toHaveText(/31,00/);
     }
     await reviewOrder();
+    await checkAccessibility(page);
     await page.screenshot({
       path: testInfo.outputPath('order-review.png'),
       fullPage: true,
@@ -197,6 +217,7 @@ test('admin reviews, creates, cancels and fulfills orders with stock history', a
         (v: { quantity: string }) => v.quantity === '0',
       ),
     ).toBe(true);
+    await publicStock(false);
     page.on('dialog', (d) => d.accept());
     await page.getByLabel('Причина скасування').fill('Покупець передумав');
     await page
@@ -214,6 +235,7 @@ test('admin reviews, creates, cancels and fulfills orders with stock history', a
         (v: { quantity: string }) => v.quantity === '2',
       ),
     ).toBe(true);
+    await publicStock(true);
     await page
       .getByRole('link', { name: 'Рух запасів цього замовлення' })
       .click();
@@ -237,6 +259,7 @@ test('admin reviews, creates, cancels and fulfills orders with stock history', a
     await expect(
       page.getByRole('button', { name: 'Скасувати й повернути запаси' }),
     ).toHaveCount(0);
+    await checkAccessibility(page);
     await page.screenshot({
       path: testInfo.outputPath('order-fulfilled.png'),
       fullPage: true,
@@ -246,6 +269,7 @@ test('admin reviews, creates, cancels and fulfills orders with stock history', a
         (v: { quantity: string }) => v.quantity === '0',
       ),
     ).toBe(true);
+    await publicStock(false);
     await page.goto('/admin/orders');
     await page.getByLabel('Пошук', { exact: true }).fill(m);
     await page

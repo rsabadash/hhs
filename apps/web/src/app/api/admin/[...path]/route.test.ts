@@ -53,4 +53,42 @@ describe('admin proxy security', () => {
     );
     expect(fetch).not.toHaveBeenCalled();
   });
+  it('rejects unknown and traversal paths without contacting the API', async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    for (const path of [
+      ['..', 'health'],
+      ['orders', '..', 'auth'],
+      ['debug'],
+      ['https:', 'evil.test'],
+    ])
+      expect(
+        (await POST(request(), { params: Promise.resolve({ path }) })).status,
+      ).toBe(404);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it('sanitizes upstream failures and redirects and keeps errors uncached', async () => {
+    for (const response of [
+      new Response('private-database-detail', { status: 500 }),
+      new Response(null, {
+        status: 302,
+        headers: { location: 'https://external.invalid' },
+      }),
+    ]) {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
+      const result = await POST(request(), context);
+      expect(result.status).toBe(503);
+      expect(result.headers.get('cache-control')).toBe('no-store');
+      expect(await result.text()).not.toMatch(
+        /private-database-detail|external.invalid/,
+      );
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('private-database-detail')),
+    );
+    const result = await POST(request(), context);
+    expect(result.status).toBe(503);
+    expect(await result.text()).not.toContain('private-database-detail');
+  });
 });

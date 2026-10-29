@@ -1,3 +1,4 @@
+import { acquireWriteLock } from './write-lock.js';
 import {
   BadRequestException,
   Body,
@@ -181,7 +182,7 @@ export class ReferenceService {
         async (tx) => {
           // Serialize reference edits across API replicas: two simultaneous category
           // moves must not each validate against an outdated tree.
-          await tx.$queryRaw`SELECT pg_advisory_xact_lock(70120261029::bigint)::text`;
+          await acquireWriteLock(tx);
           switch (kind) {
             case 'categories': {
               const data = parse(categoryInput, input);

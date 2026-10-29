@@ -1,3 +1,4 @@
+import { checkAccessibility } from './accessibility';
 import { test, expect, type Page } from '@playwright/test';
 import { adminFixture } from '../../apps/api/test/e2e-fixture';
 
@@ -20,6 +21,7 @@ test('admin creates, edits and finds reference data, then signs out', async ({
   try {
     await page.goto('/admin/units');
     await expect(page).toHaveURL(/\/admin\/login/);
+    await checkAccessibility(page);
     await page.getByLabel('Електронна пошта').fill(fixture.email);
     await page.getByLabel('Пароль', { exact: true }).fill(fixture.password);
     await page.getByRole('button', { name: 'Увійти', exact: true }).click();
@@ -111,6 +113,7 @@ test('admin creates, edits and finds reference data, then signs out', async ({
       path: test.info().outputPath('admin.png'),
       fullPage: true,
     });
+    await checkAccessibility(page);
     const forged = await page.request.post('/api/admin/references/units', {
       data: { name: 'forged' },
       headers: { Origin: 'https://attacker.invalid', 'x-hhs-csrf': '1' },

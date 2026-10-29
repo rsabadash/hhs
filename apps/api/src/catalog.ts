@@ -1,3 +1,4 @@
+import { acquireWriteLock } from './write-lock.js';
 import {
   BadRequestException,
   Body,
@@ -174,7 +175,7 @@ export class CatalogService {
       return await this.db.$transaction(
         async (tx) => {
           // Same lock as references: attribute edits, tag cleanup and catalog writes are atomic across replicas.
-          await tx.$queryRaw`SELECT pg_advisory_xact_lock(70120261029::bigint)::text`;
+          await acquireWriteLock(tx);
           const old = id
             ? await tx.product.findUnique({
                 where: { id },

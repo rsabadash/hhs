@@ -29,70 +29,84 @@ export async function adminFixture() {
       );
     },
     async cleanup() {
-      // Fixtures own these documents and all their movement/balance rows.
-      await pool.query(
-        'DELETE FROM "StockMovement" WHERE "actorId" IN (SELECT id FROM "Admin" WHERE email=$1)',
-        [email],
-      );
-      await pool.query(
-        'DELETE FROM "OrderItem" WHERE "orderId" IN (SELECT id FROM "Order" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1))',
-        [email],
-      );
-      await pool.query(
-        'DELETE FROM "Order" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
-        [email],
-      );
-      await pool.query(
-        'DELETE FROM "InventoryCountItem" WHERE "countId" IN (SELECT id FROM "InventoryCount" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1))',
-        [email],
-      );
-      await pool.query(
-        'DELETE FROM "InventoryCount" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
-        [email],
-      );
-      await pool.query(
-        'DELETE FROM "Supply" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
-        [email],
-      );
-      await pool.query(
-        'DELETE FROM "StockBalance" WHERE "warehouseId" IN (SELECT id FROM "Warehouse" WHERE name LIKE $1)',
-        [`%${marker}%`],
-      );
-      await pool.query(
-        'DELETE FROM "Image" WHERE "productId" IN (SELECT id FROM "Product" WHERE name LIKE $1)',
-        [`%${marker}%`],
-      );
-      await pool.query(
-        'DELETE FROM "Variant" WHERE "productId" IN (SELECT id FROM "Product" WHERE name LIKE $1)',
-        [`%${marker}%`],
-      );
-      await pool.query('DELETE FROM "Product" WHERE name LIKE $1', [
-        `%${marker}%`,
-      ]);
-      await pool.query(
-        'DELETE FROM "Tag" WHERE name LIKE $1 AND NOT EXISTS (SELECT 1 FROM "ProductTag" WHERE "tagId"="Tag".id)',
-        [`%${marker}%`],
-      );
-      await pool.query('DELETE FROM "Admin" WHERE email=$1', [email]);
-      await pool.query('DELETE FROM "LoginThrottle" WHERE key=$1', [
-        `email:${createHash('sha256').update(email).digest('hex')}`,
-      ]);
-      await pool.query(
-        'DELETE FROM "AttributeValue" WHERE "attributeId" IN (SELECT id FROM "Attribute" WHERE name LIKE $1)',
-        [`%${marker}%`],
-      );
-      for (const table of ['Attribute', 'Unit', 'Warehouse', 'Supplier'])
-        await pool.query(`DELETE FROM "${table}" WHERE name LIKE $1`, [
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query("SET LOCAL statement_timeout = '12s'");
+        await client.query(
+          "SET LOCAL idle_in_transaction_session_timeout = '30s'",
+        );
+        // Fixtures own these documents and all their movement/balance rows.
+        await client.query(
+          'DELETE FROM "StockMovement" WHERE "actorId" IN (SELECT id FROM "Admin" WHERE email=$1)',
+          [email],
+        );
+        await client.query(
+          'DELETE FROM "OrderItem" WHERE "orderId" IN (SELECT id FROM "Order" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1))',
+          [email],
+        );
+        await client.query(
+          'DELETE FROM "Order" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
+          [email],
+        );
+        await client.query(
+          'DELETE FROM "InventoryCountItem" WHERE "countId" IN (SELECT id FROM "InventoryCount" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1))',
+          [email],
+        );
+        await client.query(
+          'DELETE FROM "InventoryCount" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
+          [email],
+        );
+        await client.query(
+          'DELETE FROM "Supply" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
+          [email],
+        );
+        await client.query(
+          'DELETE FROM "StockBalance" WHERE "warehouseId" IN (SELECT id FROM "Warehouse" WHERE name LIKE $1)',
+          [`%${marker}%`],
+        );
+        await client.query(
+          'DELETE FROM "Image" WHERE "productId" IN (SELECT id FROM "Product" WHERE name LIKE $1)',
+          [`%${marker}%`],
+        );
+        await client.query(
+          'DELETE FROM "Variant" WHERE "productId" IN (SELECT id FROM "Product" WHERE name LIKE $1)',
+          [`%${marker}%`],
+        );
+        await client.query('DELETE FROM "Product" WHERE name LIKE $1', [
           `%${marker}%`,
         ]);
-      await pool.query(
-        'UPDATE "Category" SET "parentId"=NULL WHERE name LIKE $1',
-        [`%${marker}%`],
-      );
-      await pool.query('DELETE FROM "Category" WHERE name LIKE $1', [
-        `%${marker}%`,
-      ]);
-      await pool.end();
+        await client.query(
+          'DELETE FROM "Tag" WHERE name LIKE $1 AND NOT EXISTS (SELECT 1 FROM "ProductTag" WHERE "tagId"="Tag".id)',
+          [`%${marker}%`],
+        );
+        await client.query('DELETE FROM "Admin" WHERE email=$1', [email]);
+        await client.query('DELETE FROM "LoginThrottle" WHERE key=$1', [
+          `email:${createHash('sha256').update(email).digest('hex')}`,
+        ]);
+        await client.query(
+          'DELETE FROM "AttributeValue" WHERE "attributeId" IN (SELECT id FROM "Attribute" WHERE name LIKE $1)',
+          [`%${marker}%`],
+        );
+        for (const table of ['Attribute', 'Unit', 'Warehouse', 'Supplier'])
+          await client.query(`DELETE FROM "${table}" WHERE name LIKE $1`, [
+            `%${marker}%`,
+          ]);
+        await client.query(
+          'UPDATE "Category" SET "parentId"=NULL WHERE name LIKE $1',
+          [`%${marker}%`],
+        );
+        await client.query('DELETE FROM "Category" WHERE name LIKE $1', [
+          `%${marker}%`,
+        ]);
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+        await pool.end();
+      }
     },
   };
 }

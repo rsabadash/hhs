@@ -1,3 +1,4 @@
+import { acquireWriteLock } from './write-lock.js';
 import {
   BadRequestException,
   Body,
@@ -91,12 +92,12 @@ function supplyView<
 export class InventoryService {
   constructor(@Inject(Database) private readonly db: Database) {}
   // Shared with reference/catalog mutations: unit changes and archiving cannot
-  // race stock operations. Future order writes must use this transaction too.
+  // race stock operations. Order writes use this transaction too.
   async write<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
     try {
       return await this.db.$transaction(
         async (tx) => {
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(70120261029)`;
+          await acquireWriteLock(tx);
           return fn(tx);
         },
         { timeout: 30000, maxWait: 10000 },

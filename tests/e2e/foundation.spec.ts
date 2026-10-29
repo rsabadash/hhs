@@ -1,9 +1,12 @@
+import { checkAccessibility } from './accessibility';
 import { expect, test } from '@playwright/test';
 
 test('Ukrainian storefront loads with accessible navigation and no horizontal overflow', async ({
   page,
 }) => {
-  await page.goto('/');
+  const response = await page.goto('/');
+  expect(response?.headers()['x-frame-options']).toBe('DENY');
+  expect(response?.headers()['x-content-type-options']).toBe('nosniff');
   await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'Деталі, з яких починається краса.',
@@ -11,6 +14,7 @@ test('Ukrainian storefront loads with accessible navigation and no horizontal ov
   await expect(
     page.getByRole('searchbox', { name: 'Пошук', exact: true }),
   ).toBeVisible();
+  await checkAccessibility(page);
   await page.keyboard.press('Tab');
   await expect(
     page.getByRole('link', { name: 'Перейти до вмісту' }),

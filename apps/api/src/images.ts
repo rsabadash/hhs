@@ -1,3 +1,4 @@
+import { acquireWriteLock } from './write-lock.js';
 import {
   BadRequestException,
   Body,
@@ -142,7 +143,7 @@ export class ImageService {
     const url = await this.store.upload(publicId, bytes);
     return this.db.$transaction(
       async (tx) => {
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(70120261029::bigint)::text`;
+        await acquireWriteLock(tx);
         if (
           !(await tx.product.findFirst({
             where: { id: productId, archivedAt: null },
@@ -182,7 +183,7 @@ export class ImageService {
     const data = parse(imageEdit, input);
     return this.db.$transaction(
       async (tx) => {
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(70120261029::bigint)::text`;
+        await acquireWriteLock(tx);
         if (!(await tx.image.findFirst({ where: { id, productId } })))
           throw new NotFoundException('Зображення не знайдено.');
         if (
@@ -200,7 +201,7 @@ export class ImageService {
   async remove(productId: string, id: string) {
     const removed = await this.db.$transaction(
       async (tx) => {
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(70120261029::bigint)::text`;
+        await acquireWriteLock(tx);
         const image = await tx.image.findFirst({ where: { id, productId } });
         if (!image) return null;
         await tx.imageCleanup.upsert({

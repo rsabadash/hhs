@@ -19,9 +19,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "db:admin-reset": "pnpm --filter @hhs/api db:admin-reset"
+    "db:admin-reset": "pnpm --filter @hhs/api db:admin-reset",
+    "db:backup": "pnpm --filter @hhs/api db:backup",
+    "db:restore": "pnpm --filter @hhs/api db:restore"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^9.39.0",
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.10.0",
