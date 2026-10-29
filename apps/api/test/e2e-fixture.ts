@@ -29,6 +29,27 @@ export async function adminFixture() {
       );
     },
     async cleanup() {
+      // Fixtures own these documents and all their movement/balance rows.
+      await pool.query(
+        'DELETE FROM "StockMovement" WHERE "actorId" IN (SELECT id FROM "Admin" WHERE email=$1)',
+        [email],
+      );
+      await pool.query(
+        'DELETE FROM "InventoryCountItem" WHERE "countId" IN (SELECT id FROM "InventoryCount" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1))',
+        [email],
+      );
+      await pool.query(
+        'DELETE FROM "InventoryCount" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
+        [email],
+      );
+      await pool.query(
+        'DELETE FROM "Supply" WHERE "createdById" IN (SELECT id FROM "Admin" WHERE email=$1)',
+        [email],
+      );
+      await pool.query(
+        'DELETE FROM "StockBalance" WHERE "warehouseId" IN (SELECT id FROM "Warehouse" WHERE name LIKE $1)',
+        [`%${marker}%`],
+      );
       await pool.query(
         'DELETE FROM "Image" WHERE "productId" IN (SELECT id FROM "Product" WHERE name LIKE $1)',
         [`%${marker}%`],

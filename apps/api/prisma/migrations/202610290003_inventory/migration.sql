@@ -1,0 +1,11 @@
+ALTER TABLE "Supply" ADD COLUMN "revision" INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN "receivedById" UUID REFERENCES "Admin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "InventoryCount" ADD COLUMN "revision" INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN "startedById" UUID REFERENCES "Admin"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD COLUMN "postedById" UUID REFERENCES "Admin"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD COLUMN "cancelledById" UUID REFERENCES "Admin"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD COLUMN "cancelledAt" TIMESTAMPTZ(3);
+ALTER TABLE "InventoryCountItem" ADD COLUMN "excluded" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Supply" ADD CONSTRAINT "Supply_revision" CHECK ("revision" >= 0);
+ALTER TABLE "InventoryCount" ADD CONSTRAINT "InventoryCount_revision" CHECK ("revision" >= 0);
+CREATE INDEX "StockMovement_createdAt_id_idx" ON "StockMovement"("createdAt", "id");

@@ -1,6 +1,6 @@
 # HHS — materials for jewelry
 
-Ukrainian catalog and inventory application for one business. Next.js frontend, NestJS API, PostgreSQL with Prisma, UAH prices. The deployed M1 foundation has passed a complete release. M2 adds admin authentication and searchable reference management; see the [admin guide](docs/admin-reference.md). M3 adds product/SKU management, filters, tags and Cloudinary galleries; see the [catalog guide](docs/catalog.md). Supplies, inventory counts, public shopping pages and orders remain in the [implementation plan](docs/implementation-plan.md).
+Ukrainian catalog and inventory application for one business. Next.js frontend, NestJS API, PostgreSQL with Prisma, UAH prices. The deployed M1 foundation has passed a complete release. M2 adds admin authentication and searchable reference management; see the [admin guide](docs/admin-reference.md). M3 adds product/SKU management, filters, tags and Cloudinary galleries; see the [catalog guide](docs/catalog.md). M4 adds multi-SKU supplies, stock history and separate inventory counts; see the [inventory guide](docs/inventory.md). Public shopping pages and orders remain in the [implementation plan](docs/implementation-plan.md).
 
 ## Local setup
 
@@ -66,10 +66,10 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-E2e tests start production API/web servers on ports 4000/3000, so those ports must be free. Export identical isolated `DATABASE_URL` and `TEST_DATABASE_URL` values, and `API_URL=http://127.0.0.1:4000` for Next.js. Integration tests additionally launch the compiled API on port 4101. To use an existing isolated Chrome executable, set `PLAYWRIGHT_EXECUTABLE_PATH`; CI downloads Playwright Chromium.
+E2e tests start production API/web servers on ports 4000/3000, so those ports must be free. Export identical isolated `DATABASE_URL` and `TEST_DATABASE_URL` values, and `API_URL=http://127.0.0.1:4000` for Next.js. Integration tests additionally launch the compiled API on ports 4101–4103. To use an existing isolated Chrome executable, set `PLAYWRIGHT_EXECUTABLE_PATH`; CI downloads Playwright Chromium.
 
 ## Repository and deployment
 
 Target: [rsabadash/hhs](https://github.com/rsabadash/hhs). Checks run on pull requests and pushes to `main`. The manual **Deploy prototype** workflow reruns checks and deploys only on `main` with `DEPLOY_ENABLED=true`.
 
-Neon, Render, Netlify and GitHub deployment settings are configured. The first full prototype release passed on 2026-10-29; M2 requires a new release and initial admin provisioning. See [deployment setup](docs/deployment.md), [foundation status and limits](docs/foundation.md), and the [health API contract](docs/openapi.yaml).
+Neon, Render, Netlify and GitHub deployment settings are configured. The first full prototype release passed on 2026-10-29; M2 and M3 are deployed; M4 requires a new release. See [deployment setup](docs/deployment.md), [foundation status and limits](docs/foundation.md), and the [health API contract](docs/openapi.yaml).

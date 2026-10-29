@@ -20,7 +20,7 @@ export class HealthController {
     try {
       // Also verifies the schema exists, without returning business data.
       await this.database
-        .$queryRaw`SELECT EXISTS(SELECT 1 FROM "Variant"), EXISTS(SELECT 1 FROM "LoginThrottle"), EXISTS(SELECT 1 FROM "ImageCleanup")`;
+        .$queryRaw`SELECT EXISTS(SELECT 1 FROM "Variant"), EXISTS(SELECT 1 FROM "LoginThrottle"), EXISTS(SELECT 1 FROM "ImageCleanup"), EXISTS(SELECT "revision" FROM "Supply"), EXISTS(SELECT "excluded" FROM "InventoryCountItem")`;
       return { status: 'ok' as const };
     } catch {
       throw new ServiceUnavailableException('Service unavailable');

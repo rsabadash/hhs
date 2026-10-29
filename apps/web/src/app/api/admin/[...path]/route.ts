@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 const safePath =
-  /^(auth\/(login|logout|me)|products(\/(image-settings|[a-f0-9-]{36}(\/images(\/[a-f0-9-]{36})?)?))?|references\/(categories|attributes|attribute-values|units|warehouses|suppliers)(\/[a-f0-9-]{36})?)$/;
+  /^(inventory\/(variants|balances|movements|supplies(\/[a-f0-9-]{36}(\/receive)?)?|counts(\/[a-f0-9-]{36}(\/(start|results|recount|post|cancel))?)?)|auth\/(login|logout|me)|products(\/(image-settings|[a-f0-9-]{36}(\/images(\/[a-f0-9-]{36})?)?))?|references\/(categories|attributes|attribute-values|units|warehouses|suppliers)(\/[a-f0-9-]{36})?)$/;
 const jsonError = (message: string, status: number) =>
   Response.json(
     { message },
@@ -42,7 +42,7 @@ async function proxy(
           (request.method === 'POST' &&
           /^products\/[a-f0-9-]{36}\/images$/.test(path)
             ? 4250000
-            : /^products(\/[a-f0-9-]{36})?$/.test(path)
+            : /^(products|inventory)(\/.*)?$/.test(path)
               ? 262144
               : 32768)
         ) {

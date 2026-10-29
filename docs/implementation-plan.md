@@ -1,8 +1,10 @@
 # Jewelry materials catalog and inventory — implementation plan
 
-Status: implementation authorized on 2026-10-28. The user waived further UX revision. M1 technical foundation is deployed and verified; M2 authentication and reference data is deployed and the user confirmed administrator provisioning works; M3 catalog implementation and real Cloudinary upload/delivery/deletion are verified, awaiting release; detailed proposed rules remain documented defaults to refine during their feature milestones.
+Status: implementation authorized on 2026-10-28. The user waived further UX revision. M1 technical foundation is deployed and verified; M2 authentication and reference data is deployed and the user confirmed administrator provisioning works; M3 catalog and Cloudinary integration are deployed and verified; M4 supplies/inventory is implemented and verified on an isolated Neon branch and desktop/mobile browsers, awaiting release; detailed proposed rules remain documented defaults to refine during their feature milestones.
 
 Updated: 2026-10-29.
+
+M4 workflow and API: [supplies and inventory guide](inventory.md).
 
 ## 1. Current position
 

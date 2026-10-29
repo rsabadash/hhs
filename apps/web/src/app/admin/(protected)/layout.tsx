@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { adminApi } from '@/lib/admin-api';
 import { sections } from '@/lib/references';
+import { inventorySections } from '@/lib/inventory';
 import Logout from '../logout';
 export default async function ProtectedLayout({
   children,
@@ -23,6 +24,12 @@ export default async function ProtectedLayout({
         <nav className="admin-nav" aria-label="Довідники">
           <p className="eyebrow">Каталог</p>
           <Link href="/admin/products">Товари</Link>
+          <p className="eyebrow">Складський облік</p>
+          {Object.entries(inventorySections).map(([key, label]) => (
+            <Link key={key} href={`/admin/inventory/${key}`}>
+              {label}
+            </Link>
+          ))}
           <p className="eyebrow">Довідники</p>
           {Object.entries(sections)
             .filter(([key]) => key !== 'attribute-values')

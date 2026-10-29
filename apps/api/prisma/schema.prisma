@@ -46,14 +46,18 @@ enum MovementKind {
 }
 
 model Admin {
-  id           String           @id @default(uuid()) @db.Uuid
-  email        String           @unique
-  passwordHash String
-  sessions     Session[]
-  supplies     Supply[]
-  orders       Order[]
-  counts       InventoryCount[]
-  movements    StockMovement[]
+  id               String           @id @default(uuid()) @db.Uuid
+  email            String           @unique
+  passwordHash     String
+  sessions         Session[]
+  supplies         Supply[]
+  orders           Order[]
+  counts           InventoryCount[]
+  movements        StockMovement[]
+  receivedSupplies Supply[]         @relation("ReceivedBy")
+  startedCounts    InventoryCount[] @relation("StartedBy")
+  postedCounts     InventoryCount[] @relation("PostedBy")
+  cancelledCounts  InventoryCount[] @relation("CancelledBy")
 }
 
 model LoginThrottle {
@@ -236,19 +240,22 @@ model Supplier {
 }
 
 model Supply {
-  id          String       @id @default(uuid()) @db.Uuid
-  reference   String       @unique
-  warehouseId String       @db.Uuid
-  warehouse   Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  supplierId  String       @db.Uuid
-  supplier    Supplier     @relation(fields: [supplierId], references: [id], onDelete: Restrict)
-  createdById String       @db.Uuid
-  createdBy   Admin        @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  status      SupplyStatus @default(DRAFT)
-  receivedAt  DateTime?    @db.Timestamptz(3)
-  createdAt   DateTime     @default(now()) @db.Timestamptz(3)
-  notes       String       @default("")
-  items       SupplyItem[]
+  id           String       @id @default(uuid()) @db.Uuid
+  reference    String       @unique
+  warehouseId  String       @db.Uuid
+  warehouse    Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  supplierId   String       @db.Uuid
+  supplier     Supplier     @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  createdById  String       @db.Uuid
+  createdBy    Admin        @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  status       SupplyStatus @default(DRAFT)
+  revision     Int          @default(0)
+  receivedById String?      @db.Uuid
+  receivedBy   Admin?       @relation("ReceivedBy", fields: [receivedById], references: [id], onDelete: Restrict)
+  receivedAt   DateTime?    @db.Timestamptz(3)
+  createdAt    DateTime     @default(now()) @db.Timestamptz(3)
+  notes        String       @default("")
+  items        SupplyItem[]
 
   @@unique([id, warehouseId])
   @@index([warehouseId, status, createdAt])
@@ -313,18 +320,26 @@ model OrderItem {
 }
 
 model InventoryCount {
-  id          String               @id @default(uuid()) @db.Uuid
-  reference   String               @unique
-  warehouseId String               @db.Uuid
-  warehouse   Warehouse            @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  createdById String               @db.Uuid
-  createdBy   Admin                @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  status      CountStatus          @default(DRAFT)
-  notes       String               @default("")
-  createdAt   DateTime             @default(now()) @db.Timestamptz(3)
-  startedAt   DateTime?            @db.Timestamptz(3)
-  postedAt    DateTime?            @db.Timestamptz(3)
-  items       InventoryCountItem[]
+  id            String               @id @default(uuid()) @db.Uuid
+  reference     String               @unique
+  warehouseId   String               @db.Uuid
+  warehouse     Warehouse            @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  createdById   String               @db.Uuid
+  createdBy     Admin                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  status        CountStatus          @default(DRAFT)
+  notes         String               @default("")
+  createdAt     DateTime             @default(now()) @db.Timestamptz(3)
+  revision      Int                  @default(0)
+  startedById   String?              @db.Uuid
+  startedBy     Admin?               @relation("StartedBy", fields: [startedById], references: [id], onDelete: Restrict)
+  postedById    String?              @db.Uuid
+  postedBy      Admin?               @relation("PostedBy", fields: [postedById], references: [id], onDelete: Restrict)
+  cancelledById String?              @db.Uuid
+  cancelledBy   Admin?               @relation("CancelledBy", fields: [cancelledById], references: [id], onDelete: Restrict)
+  cancelledAt   DateTime?            @db.Timestamptz(3)
+  startedAt     DateTime?            @db.Timestamptz(3)
+  postedAt      DateTime?            @db.Timestamptz(3)
+  items         InventoryCountItem[]
 
   @@unique([id, warehouseId])
   @@index([warehouseId, status, createdAt])
@@ -339,6 +354,7 @@ model InventoryCountItem {
   variant          Variant         @relation(fields: [variantId], references: [id], onDelete: Restrict)
   expectedQuantity Decimal         @db.Decimal(16, 3)
   expectedRevision Int
+  excluded         Boolean         @default(false)
   actualQuantity   Decimal?        @db.Decimal(16, 3)
   reason           String          @default("")
   movements        StockMovement[]
@@ -380,6 +396,7 @@ model StockMovement {
 
   @@unique([orderItemId, kind])
   @@index([variantId, warehouseId, createdAt])
+  @@index([createdAt, id])
 }
 
 // Deferred media deletion and reservations for uploads whose response may time out.

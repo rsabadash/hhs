@@ -511,3 +511,34 @@
     grid-template-columns: 1fr;
   }
 }
+
+.stock-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 1.2rem;
+}
+.stock-line h2 {
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}
+.stock-total {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.stock-fieldset input:not([type='checkbox']),
+.stock-fieldset textarea {
+  width: 100%;
+  min-width: 0;
+}
+.stock-fieldset button {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.picker-options small {
+  display: block;
+  font-weight: normal;
+}
