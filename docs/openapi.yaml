@@ -1,0 +1,40 @@
+openapi: 3.1.0
+info:
+  title: HHS foundation API
+  version: 0.1.0
+  description: Only health endpoints are exposed in M1. Business APIs follow in M2–M6.
+paths:
+  /health/live:
+    get:
+      operationId: liveness
+      summary: Check that the API process is running
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Healthy'
+  /health/ready:
+    get:
+      operationId: readiness
+      summary: Check database access and the initial schema
+      responses:
+        '200':
+          description: API can query the migrated database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Healthy'
+        '503':
+          description: Database unavailable or schema missing; no connection details returned
+components:
+  schemas:
+    Healthy:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: ok

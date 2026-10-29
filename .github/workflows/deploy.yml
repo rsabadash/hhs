@@ -1,0 +1,47 @@
+name: Deploy prototype
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: prototype-deployment
+  cancel-in-progress: false
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+  deploy:
+    needs: checks
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: prototype
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
+      - name: Apply checked migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
+      - name: Deploy checked API revision and wait for it
+        run: node scripts/deploy-render.mjs
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ vars.RENDER_SERVICE_ID }}
+      - name: Build and deploy this checkout to Netlify
+        run: pnpm dlx netlify-cli@27.15.0 deploy --prod --context production --filter @hhs/web
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
+          API_URL: ${{ vars.API_URL }}
+      - name: Verify deployed services
+        run: node scripts/smoke-deployment.mjs
+        env:
+          API_URL: ${{ vars.API_URL }}
+          WEB_URL: ${{ vars.WEB_URL }}

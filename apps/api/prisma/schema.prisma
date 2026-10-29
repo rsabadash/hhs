@@ -1,0 +1,372 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum AttributeKind {
+  CHOICE
+  NUMBER
+}
+
+enum SupplyStatus {
+  DRAFT
+  RECEIVED
+}
+
+enum OrderStatus {
+  CONFIRMED
+  FULFILLED
+  CANCELLED
+}
+
+enum CountStatus {
+  DRAFT
+  COUNTING
+  POSTED
+  CANCELLED
+}
+
+enum MovementKind {
+  RECEIPT
+  SALE
+  CANCELLATION
+  COUNT
+}
+
+model Admin {
+  id           String           @id @default(uuid()) @db.Uuid
+  email        String           @unique
+  passwordHash String
+  sessions     Session[]
+  supplies     Supply[]
+  orders       Order[]
+  counts       InventoryCount[]
+  movements    StockMovement[]
+}
+
+model Session {
+  tokenHash String   @id
+  adminId   String   @db.Uuid
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @db.Timestamptz(3)
+
+  @@index([expiresAt])
+  @@index([adminId])
+}
+
+model Category {
+  id       String     @id @default(uuid()) @db.Uuid
+  name     String
+  parentId String?    @db.Uuid
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@index([parentId])
+}
+
+// Stock units (piece, pair) are separate from attribute measurement labels (mm, cm).
+model Unit {
+  id             String    @id @default(uuid()) @db.Uuid
+  name           String
+  symbol         String    @unique
+  allowsFraction Boolean   @default(false)
+  variants       Variant[]
+}
+
+model Attribute {
+  id                String           @id @default(uuid()) @db.Uuid
+  name              String           @unique
+  kind              AttributeKind
+  measurementSymbol String?
+  values            AttributeValue[]
+}
+
+model AttributeValue {
+  id           String                  @id @default(uuid()) @db.Uuid
+  attributeId  String                  @db.Uuid
+  attribute    Attribute               @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+  label        String
+  numericValue Decimal?                @db.Decimal(16, 4)
+  products     ProductAttributeValue[]
+  variants     VariantAttributeValue[]
+
+  @@unique([attributeId, label])
+  @@unique([id, attributeId])
+}
+
+model ProductAttributeValue {
+  productId   String         @db.Uuid
+  product     Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributeId String         @db.Uuid
+  valueId     String         @db.Uuid
+  value       AttributeValue @relation(fields: [valueId, attributeId], references: [id, attributeId], onDelete: Restrict)
+
+  @@id([productId, attributeId])
+  @@index([valueId, attributeId])
+}
+
+model VariantAttributeValue {
+  variantId   String         @db.Uuid
+  variant     Variant        @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  attributeId String         @db.Uuid
+  valueId     String         @db.Uuid
+  value       AttributeValue @relation(fields: [valueId, attributeId], references: [id, attributeId], onDelete: Restrict)
+
+  @@id([variantId, attributeId])
+  @@index([valueId, attributeId])
+}
+
+model Tag {
+  id       String       @id @default(uuid()) @db.Uuid
+  name     String       @unique
+  products ProductTag[]
+}
+
+model ProductTag {
+  productId String  @db.Uuid
+  tagId     String  @db.Uuid
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Restrict)
+
+  @@id([productId, tagId])
+  @@index([tagId])
+}
+
+model Product {
+  id          String                  @id @default(uuid()) @db.Uuid
+  name        String
+  description String                  @default("")
+  categoryId  String                  @db.Uuid
+  category    Category                @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  archivedAt  DateTime?               @db.Timestamptz(3)
+  createdAt   DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime                @updatedAt @db.Timestamptz(3)
+  tags        ProductTag[]
+  attributes  ProductAttributeValue[]
+  variants    Variant[]
+  images      Image[]
+
+  @@index([categoryId])
+  @@index([createdAt, id])
+}
+
+model Variant {
+  id          String                  @id @default(uuid()) @db.Uuid
+  productId   String                  @db.Uuid
+  product     Product                 @relation(fields: [productId], references: [id], onDelete: Restrict)
+  sku         String                  @unique
+  name        String
+  unitId      String                  @db.Uuid
+  unit        Unit                    @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  status      PublicationStatus       @default(DRAFT)
+  sellPrice   Decimal?                @db.Decimal(14, 2)
+  archivedAt  DateTime?               @db.Timestamptz(3)
+  createdAt   DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime                @updatedAt @db.Timestamptz(3)
+  attributes  VariantAttributeValue[]
+  images      Image[]
+  supplyItems SupplyItem[]
+  orderItems  OrderItem[]
+  countItems  InventoryCountItem[]
+  balances    StockBalance[]
+
+  @@unique([id, productId])
+  @@index([productId, status])
+  @@index([status, sellPrice, id])
+  @@index([unitId])
+}
+
+// A null variantId is a shared product image; composite FK prevents cross-product attachments.
+model Image {
+  id        String   @id @default(uuid()) @db.Uuid
+  publicId  String   @unique
+  url       String
+  alt       String   @default("")
+  position  Int      @default(0)
+  productId String   @db.Uuid
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId String?  @db.Uuid
+  variant   Variant? @relation(fields: [variantId, productId], references: [id, productId], onDelete: Cascade)
+
+  @@index([productId, position])
+  @@index([variantId, productId])
+}
+
+model Warehouse {
+  id       String           @id @default(uuid()) @db.Uuid
+  name     String           @unique
+  address  String           @default("")
+  supplies Supply[]
+  orders   Order[]
+  counts   InventoryCount[]
+  balances StockBalance[]
+}
+
+model Supplier {
+  id       String   @id @default(uuid()) @db.Uuid
+  name     String
+  email    String   @default("")
+  phone    String   @default("")
+  supplies Supply[]
+
+  @@index([name, id])
+}
+
+model Supply {
+  id          String       @id @default(uuid()) @db.Uuid
+  reference   String       @unique
+  warehouseId String       @db.Uuid
+  warehouse   Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  supplierId  String       @db.Uuid
+  supplier    Supplier     @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  createdById String       @db.Uuid
+  createdBy   Admin        @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  status      SupplyStatus @default(DRAFT)
+  receivedAt  DateTime?    @db.Timestamptz(3)
+  createdAt   DateTime     @default(now()) @db.Timestamptz(3)
+  notes       String       @default("")
+  items       SupplyItem[]
+
+  @@unique([id, warehouseId])
+  @@index([warehouseId, status, createdAt])
+  @@index([supplierId])
+}
+
+model SupplyItem {
+  id          String          @id @default(uuid()) @db.Uuid
+  supplyId    String          @db.Uuid
+  warehouseId String          @db.Uuid
+  supply      Supply          @relation(fields: [supplyId, warehouseId], references: [id, warehouseId], onDelete: Cascade)
+  variantId   String          @db.Uuid
+  variant     Variant         @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  unitSymbol  String
+  quantity    Decimal         @db.Decimal(16, 3)
+  unitCost    Decimal         @db.Decimal(14, 2)
+  movements   StockMovement[]
+
+  @@unique([supplyId, variantId])
+  @@unique([id, variantId, warehouseId])
+  @@index([variantId])
+}
+
+model Order {
+  id           String      @id @default(uuid()) @db.Uuid
+  reference    String      @unique
+  requestKey   String      @unique @db.Uuid
+  warehouseId  String      @db.Uuid
+  warehouse    Warehouse   @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  createdById  String      @db.Uuid
+  createdBy    Admin       @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  status       OrderStatus @default(CONFIRMED)
+  customerName String
+  contact      String
+  notes        String      @default("")
+  createdAt    DateTime    @default(now()) @db.Timestamptz(3)
+  fulfilledAt  DateTime?   @db.Timestamptz(3)
+  cancelledAt  DateTime?   @db.Timestamptz(3)
+  items        OrderItem[]
+
+  @@unique([id, warehouseId])
+  @@index([warehouseId, status, createdAt])
+}
+
+model OrderItem {
+  id          String          @id @default(uuid()) @db.Uuid
+  orderId     String          @db.Uuid
+  warehouseId String          @db.Uuid
+  order       Order           @relation(fields: [orderId, warehouseId], references: [id, warehouseId], onDelete: Restrict)
+  variantId   String          @db.Uuid
+  variant     Variant         @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  sku         String
+  name        String
+  unitSymbol  String
+  quantity    Decimal         @db.Decimal(16, 3)
+  unitPrice   Decimal         @db.Decimal(14, 2)
+  movements   StockMovement[]
+
+  @@unique([orderId, variantId])
+  @@unique([id, variantId, warehouseId])
+  @@index([variantId])
+}
+
+model InventoryCount {
+  id          String               @id @default(uuid()) @db.Uuid
+  reference   String               @unique
+  warehouseId String               @db.Uuid
+  warehouse   Warehouse            @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  createdById String               @db.Uuid
+  createdBy   Admin                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  status      CountStatus          @default(DRAFT)
+  notes       String               @default("")
+  createdAt   DateTime             @default(now()) @db.Timestamptz(3)
+  startedAt   DateTime?            @db.Timestamptz(3)
+  postedAt    DateTime?            @db.Timestamptz(3)
+  items       InventoryCountItem[]
+
+  @@unique([id, warehouseId])
+  @@index([warehouseId, status, createdAt])
+}
+
+model InventoryCountItem {
+  id               String          @id @default(uuid()) @db.Uuid
+  countId          String          @db.Uuid
+  warehouseId      String          @db.Uuid
+  count            InventoryCount  @relation(fields: [countId, warehouseId], references: [id, warehouseId], onDelete: Restrict)
+  variantId        String          @db.Uuid
+  variant          Variant         @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  expectedQuantity Decimal         @db.Decimal(16, 3)
+  expectedRevision Int
+  actualQuantity   Decimal?        @db.Decimal(16, 3)
+  reason           String          @default("")
+  movements        StockMovement[]
+
+  @@unique([countId, variantId])
+  @@unique([id, variantId, warehouseId])
+  @@index([variantId])
+}
+
+model StockBalance {
+  variantId   String          @db.Uuid
+  warehouseId String          @db.Uuid
+  variant     Variant         @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  warehouse   Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  quantity    Decimal         @default(0) @db.Decimal(16, 3)
+  revision    Int             @default(0)
+  movements   StockMovement[]
+
+  @@id([variantId, warehouseId])
+  @@index([warehouseId, variantId])
+}
+
+model StockMovement {
+  id           String              @id @default(uuid()) @db.Uuid
+  variantId    String              @db.Uuid
+  warehouseId  String              @db.Uuid
+  balance      StockBalance        @relation(fields: [variantId, warehouseId], references: [variantId, warehouseId], onDelete: Restrict)
+  kind         MovementKind
+  quantity     Decimal             @db.Decimal(16, 3)
+  supplyItemId String?             @unique @db.Uuid
+  supplyItem   SupplyItem?         @relation(fields: [supplyItemId, variantId, warehouseId], references: [id, variantId, warehouseId], onDelete: Restrict)
+  orderItemId  String?             @db.Uuid
+  orderItem    OrderItem?          @relation(fields: [orderItemId, variantId, warehouseId], references: [id, variantId, warehouseId], onDelete: Restrict)
+  countItemId  String?             @unique @db.Uuid
+  countItem    InventoryCountItem? @relation(fields: [countItemId, variantId, warehouseId], references: [id, variantId, warehouseId], onDelete: Restrict)
+  actorId      String              @db.Uuid
+  actor        Admin               @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt    DateTime            @default(now()) @db.Timestamptz(3)
+
+  @@unique([orderItemId, kind])
+  @@index([variantId, warehouseId, createdAt])
+}

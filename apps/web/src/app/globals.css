@@ -1,0 +1,120 @@
+:root {
+  color-scheme: light;
+  --ink: #293b35;
+  --paper: #f9f7f2;
+  --muted: #5d685f;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+a {
+  color: inherit;
+}
+.site-header {
+  max-width: 1200px;
+  margin: auto;
+  padding: 32px 32px;
+  border-bottom: 1px solid #dcded5;
+}
+.brand {
+  display: inline-flex;
+  gap: 18px;
+  align-items: center;
+  text-decoration: none;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.brand span {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+.welcome {
+  max-width: 960px;
+  padding: 100px 32px 120px;
+  margin: auto;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 12px;
+  font-weight: 600;
+}
+h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(42px, 6.5vw, 76px);
+  line-height: 1.12;
+  font-weight: 400;
+  margin: 24px 0;
+  letter-spacing: -0.035em;
+}
+.intro {
+  max-width: 470px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.7;
+}
+.notice {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  margin-top: 48px;
+  padding: 20px 24px;
+  border: 1px solid #d6ddd2;
+  border-radius: 12px;
+  max-width: 590px;
+  background: #eef1e9;
+}
+.notice p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 14px;
+}
+.dot {
+  background: #526b48;
+  border-radius: 100%;
+  min-width: 7px;
+  height: 7px;
+}
+footer {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px 32px;
+  border-top: 1px solid #dcded5;
+  color: var(--muted);
+  font-size: 12px;
+}
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  padding: 12px;
+  background: white;
+  z-index: 1;
+}
+.skip-link:focus {
+  top: 8px;
+}
+:focus-visible {
+  outline: 3px solid #526b48;
+  outline-offset: 5px;
+}
+@media (max-width: 600px) {
+  .welcome {
+    padding: 64px 24px 80px;
+  }
+  .site-header,
+  footer {
+    padding: 24px;
+  }
+  .brand {
+    gap: 12px;
+  }
+}

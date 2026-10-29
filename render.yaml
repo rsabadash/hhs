@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: hhs-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    repo: https://github.com/rsabadash/hhs
+    branch: main
+    autoDeployTrigger: off
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm db:generate && pnpm --filter @hhs/api build
+    startCommand: pnpm --filter @hhs/api start
+    healthCheckPath: /health/ready
+    envVars:
+      - key: NODE_VERSION
+        value: 24.13.1
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
