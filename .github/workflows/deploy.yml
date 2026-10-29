@@ -35,7 +35,7 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ vars.RENDER_SERVICE_ID }}
       - name: Build and deploy this checkout to Netlify
-        run: pnpm dlx netlify-cli@27.15.0 deploy --prod --context production --filter @hhs/web
+        run: pnpm --package=netlify-cli@27.15.0 dlx netlify deploy --prod --context production --filter @hhs/web
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
