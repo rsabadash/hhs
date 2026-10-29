@@ -1,10 +1,9 @@
 'use client';
-export default function AdminError({ reset }: { reset: () => void }) {
+import { ServiceRecovery } from '@/components/service-recovery';
+export default function AdminError({ retry }: { retry: () => void }) {
   return (
     <main id="main" className="login-page">
-      <h1>Дані поки недоступні</h1>
-      <p>Сервіс може прокидатися після перерви. Повторіть спробу за хвилину.</p>
-      <button onClick={reset}>Спробувати знову</button>
+      <ServiceRecovery retry={retry} />
     </main>
   );
 }

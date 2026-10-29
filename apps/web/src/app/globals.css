@@ -83,6 +83,36 @@ h1 {
   min-width: 7px;
   height: 7px;
 }
+.service-status {
+  max-width: 640px;
+  padding: 24px 0;
+}
+.service-status h1 {
+  font-size: clamp(32px, 5vw, 52px);
+}
+.service-status p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+.service-spinner {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #d6ddd2;
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: service-spin 1s linear infinite;
+}
+@keyframes service-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .service-spinner {
+    animation: none;
+  }
+}
 footer {
   max-width: 1200px;
   margin: auto;

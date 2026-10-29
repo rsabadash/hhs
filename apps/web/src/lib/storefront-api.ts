@@ -14,7 +14,7 @@ export async function storefrontApi<T>(path: string): Promise<T> {
       ),
       {
         cache: 'no-store',
-        signal: AbortSignal.timeout(55000),
+        signal: AbortSignal.timeout(8000),
       },
     );
   } catch {

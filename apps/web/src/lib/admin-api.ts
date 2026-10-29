@@ -10,7 +10,7 @@ export async function adminApi<T>(path: string): Promise<T> {
     {
       headers: { cookie: `hhs_session=${encodeURIComponent(token)}` },
       cache: 'no-store',
-      signal: AbortSignal.timeout(55000),
+      signal: AbortSignal.timeout(8000),
     },
   );
   if (response.status === 401) redirect('/admin/login?expired=1');

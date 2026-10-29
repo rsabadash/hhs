@@ -1,9 +1,9 @@
 'use client';
-export default function ErrorPage({ reset }: { reset: () => void }) {
+import { ServiceRecovery } from '@/components/service-recovery';
+export default function ErrorPage({ retry }: { retry: () => void }) {
   return (
     <main id="main" className="welcome">
-      <h1>Не вдалося завантажити сторінку</h1>
-      <button onClick={reset}>Спробувати ще раз</button>
+      <ServiceRecovery retry={retry} />
     </main>
   );
 }
