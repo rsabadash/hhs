@@ -1,6 +1,6 @@
 # M1 — technical foundation
 
-Started 2026-10-28 after the user waived further UX revision. M1 remains in progress until hosted checks and deployment are verified.
+Started 2026-10-28 after the user waived further UX revision. M1 is complete: hosted checks and deployment passed on 2026-10-29. The earlier local-verification notes below are historical.
 
 ## Implemented locally
 
@@ -43,7 +43,7 @@ Verified results:
 
 The first automated browser login timed out; manual `neon login` succeeded. One database test timed out during an interrupted run; connection/query timeouts and guaranteed connection cleanup were added, then all 9 tests passed. The `pg` dependency emitted a warning about a future major-version change in SSL URL semantics; current TLS verification succeeded without disabling certificate checks.
 
-Credentials and `.neon` are ignored by Git. The temporary test branch and its local credential file were deleted after verification. Playwright stopped its local application servers. Application hosting on Render/Netlify and hosted CI/deployment remain unverified. This setup does not claim the catalog/order business features are implemented.
+Credentials and `.neon` are ignored by Git. The temporary test branch and its local credential file were deleted after verification. Playwright stopped its local application servers. Application hosting and hosted CI/deployment were subsequently verified as described below. This setup does not claim the catalog/order business features are implemented.
 
 ## Deliberate boundaries
 
@@ -53,8 +53,13 @@ M2 will enforce category ancestry, attribute kind/value rules and whole-number u
 
 Money uses UAH only. Quantity conversion is deferred. `Unit` is the SKU's inventory/selling unit; attribute `measurementSymbol` describes dimensional measurements such as mm and cm. Supply/order line unit symbols and order SKU/name/prices preserve historical display data. The services must prevent changing a stocked SKU's unit.
 
-## External setup outstanding
+## Hosted release — 2026-10-29
 
-The local repository is initialized with the user-selected origin. GitHub.com authentication is unavailable, so files have not been pushed and Actions have not run. The Neon database is now provisioned and verified as described above; hosted frontend/API and image storage are still outstanding. Do not call M1 deployed or the CRM feature-complete.
+[Deploy prototype run 40853149068](https://github.com/rsabadash/hhs/actions/runs/40853149068) passed its checks, migrations, exact-commit Render deployment, Netlify deployment and health checks.
 
-Next implementation milestone: M2 — authentication and searchable/filterable reference-data management.
+- API: https://hhs-api.onrender.com
+- Web: https://sage-daffodil-75ca07.netlify.app
+- GitHub environment: `prototype`; release gate: repository variable `DEPLOY_ENABLED=true`.
+- Render automatic deploys are off. Netlify Git builds are stopped; CLI deployment remains available.
+
+M1 deployment is complete. Cloudinary belongs to M3 and is not required for M2. The CRM is not feature-complete. M2 implementation and verification are described in [admin and reference data](admin-reference.md).

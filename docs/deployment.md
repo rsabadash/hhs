@@ -1,16 +1,20 @@
 # Prototype deployment
 
-Neon is connected: project `hhs` (`billowing-fog-37470920`), AWS Frankfurt, PostgreSQL 18, branch `production`. The initial migration is applied. Render and Netlify application hosting are still pending. The user selected `https://github.com/rsabadash/hhs`. Authenticate locally with `gh auth login --hostname github.com` before publishing this project. Do not put tokens in tracked files.
+Neon is connected: project `hhs` (`billowing-fog-37470920`), AWS Frankfurt, PostgreSQL 18, branch `production`. The initial migration is applied. Render and Netlify are live; the complete M1 release succeeded in [run 40853149068](https://github.com/rsabadash/hhs/actions/runs/40853149068). The user selected `https://github.com/rsabadash/hhs`. Authenticate locally with `gh auth login --hostname github.com` before publishing this project. Do not put tokens in tracked files.
+
+API: https://hhs-api.onrender.com. Web: https://sage-daffodil-75ca07.netlify.app. Render was configured manually; `render.yaml` documents the configuration but is not connected as a managed Blueprint.
+
+For M2, apply the release migration and then provision the initial administrator on a trusted machine using [the admin guide](admin-reference.md). No account or password is shipped by default.
 
 ## Account setup
 
 1. Neon setup is complete for this prototype. Use the pooled `DATABASE_URL` from the ignored root `.env.local` as Render’s secret. Copy `DATABASE_URL_UNPOOLED` into GitHub’s `DIRECT_DATABASE_URL` secret. Keep prototype data separate from future production data.
 2. Create a Render account, connect the GitHub repository, and import `render.yaml`. Set its secret `DATABASE_URL`. Keep automatic deploys **off**; the release workflow supplies the checked commit. The first deployment may fail readiness until the initial migration is applied by the release workflow.
-3. Create a Netlify project for the repository, with the base directory `apps/web`. The root `netlify.toml` describes the build. Disable automatic Git-triggered builds (for example, unlink the Git integration after site creation while retaining CLI deploy access) so the release workflow owns publication. Set `API_URL` to the Render HTTPS URL for both build and function runtime scopes.
+3. Create a Netlify project for the repository, with the base directory `apps/web`. The root `netlify.toml` describes the build. Disable automatic Git-triggered builds (set Netlify Build status to **Stopped builds**, which retains CLI deploy access) so the release workflow owns publication. Set `API_URL` to the Render HTTPS URL for both build and function runtime scopes.
 4. In GitHub, create an environment named `prototype`. Add the settings below. Keep repository variable `DEPLOY_ENABLED` unset until all settings are ready.
 5. Create a Cloudinary account before M3 image integration. Credentials are not needed for the foundation and must never be sent to the browser.
 
-Accounts, plan terms and provider build/runtime behavior must be verified when provisioning. The free Render service can sleep; initial requests may fail readiness during wake-up. The Netlify adapter and deployment scripts have not yet been exercised against real accounts.
+Accounts, plan terms and provider build/runtime behavior must be verified when provisioning. The free Render service can sleep; initial requests may fail readiness during wake-up. The Netlify adapter and deployment scripts have passed an actual prototype release.
 
 ## GitHub configuration
 

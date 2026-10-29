@@ -15,6 +15,7 @@ enum PublicationStatus {
 }
 
 enum AttributeKind {
+  TEXT
   CHOICE
   NUMBER
 }
@@ -55,6 +56,14 @@ model Admin {
   movements    StockMovement[]
 }
 
+model LoginThrottle {
+  key       String   @id
+  attempts  Int
+  expiresAt DateTime @db.Timestamptz(3)
+
+  @@index([expiresAt])
+}
+
 model Session {
   tokenHash String   @id
   adminId   String   @db.Uuid
@@ -74,6 +83,7 @@ model Category {
   products Product[]
 
   @@index([parentId])
+  @@index([name, id])
 }
 
 // Stock units (piece, pair) are separate from attribute measurement labels (mm, cm).

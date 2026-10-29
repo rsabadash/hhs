@@ -18,7 +18,8 @@
     "db:local": "pnpm --filter @hhs/api exec prisma dev --name hhs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "db:admin-reset": "pnpm --filter @hhs/api db:admin-reset"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
