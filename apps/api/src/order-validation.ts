@@ -35,6 +35,7 @@ export const fulfillInput = z.object({}).strict();
 export const orderQuery = z
   .object({
     q: z.string().trim().max(100).default(''),
+    sort: z.enum(['asc', 'desc']).default('desc'),
     page: z.coerce.number().int().min(1).max(100000).default(1),
     pageSize: z.coerce.number().int().min(1).max(50).default(20),
     warehouseId: uuid.optional(),

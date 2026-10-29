@@ -94,15 +94,18 @@ export default async function InventoryPage({
       <StockFilters
         key={qs.toString()}
         section={section}
+        total={data?.total}
         query={query}
         selections={{ warehouse, supplier, category }}
         initialAttributes={attributes}
       />
       {!data ? (
-        <p>Виберіть склад, щоб переглянути залишки, включно з нульовими.</p>
+        <p>
+          Відкрийте «Фільтри» та виберіть склад, щоб переглянути залишки,
+          включно з нульовими.
+        </p>
       ) : (
         <>
-          <p role="status">Знайдено: {data.total}</p>
           {!data.items.length && (
             <div className="catalog-card">
               <h2>

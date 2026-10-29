@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import ListControls from '@/components/list-controls';
 import { useState } from 'react';
 import type { Assignment, Selection } from '@/lib/catalog';
 import {
@@ -10,6 +10,55 @@ import {
 import ReferencePicker from './reference-picker';
 import ProductAttributes from './product-attributes';
 export default function StockFilters({
+  total,
+  ...props
+}: Parameters<typeof FilterFields>[0] & { total?: number }) {
+  return (
+    <ListControls
+      action={`/admin/inventory/${props.section}`}
+      query={new URLSearchParams(props.query).toString()}
+      placeholder={
+        props.section === 'balances'
+          ? 'Назва або SKU'
+          : 'Номер документа, назва або SKU'
+      }
+      resultLabel={
+        total === undefined ? 'Виберіть склад у фільтрах' : `Знайдено: ${total}`
+      }
+      filterKeys={[
+        'warehouseId',
+        'supplierId',
+        'categoryId',
+        'dateField',
+        'status',
+        'kind',
+        'from',
+        'to',
+        'tag',
+        'inStock',
+        'archived',
+        'valueIds',
+        'variantId',
+      ]}
+      filterDefaults={{ archived: 'all', dateField: 'createdAt' }}
+      defaultSort={props.section === 'balances' ? 'asc' : 'desc'}
+      sortOptions={
+        props.section === 'balances'
+          ? [
+              { value: 'asc', label: 'SKU: А → Я' },
+              { value: 'desc', label: 'SKU: Я → А' },
+            ]
+          : [
+              { value: 'desc', label: 'Спочатку нові' },
+              { value: 'asc', label: 'Спочатку старі' },
+            ]
+      }
+    >
+      <FilterFields {...props} />
+    </ListControls>
+  );
+}
+function FilterFields({
   section,
   query,
   selections,
@@ -30,19 +79,8 @@ export default function StockFilters({
     [attributes, setAttributes] = useState(initialAttributes);
   const balance = section === 'balances';
   return (
-    <form action={`/admin/inventory/${section}`} className="catalog-card">
+    <>
       <div className="catalog-grid">
-        <label>
-          Пошук
-          <input
-            name="q"
-            defaultValue={query.q}
-            maxLength={100}
-            placeholder={
-              balance ? 'Назва або SKU' : 'Номер документа, назва або SKU'
-            }
-          />
-        </label>
         <ReferencePicker
           kind="warehouses"
           label="Склад"
@@ -152,20 +190,6 @@ export default function StockFilters({
             </label>
           </>
         )}
-        <label>
-          Сортування
-          <select
-            name="sort"
-            defaultValue={query.sort || (balance ? 'asc' : 'desc')}
-          >
-            <option value="desc">
-              {balance ? 'SKU: Я → А' : 'Спочатку нові'}
-            </option>
-            <option value="asc">
-              {balance ? 'SKU: А → Я' : 'Спочатку старі'}
-            </option>
-          </select>
-        </label>
       </div>
       {balance && (
         <>
@@ -186,12 +210,14 @@ export default function StockFilters({
         </>
       )}
       {query.variantId && (
-        <input type="hidden" name="variantId" value={query.variantId} />
+        <label>
+          Вибраний SKU
+          <select name="variantId" defaultValue={query.variantId}>
+            <option value={query.variantId}>Лише вибраний SKU</option>
+            <option value="">Усі SKU</option>
+          </select>
+        </label>
       )}
-      <div className="catalog-actions">
-        <button className="primary">Застосувати</button>
-        <Link href={`/admin/inventory/${section}`}>Скинути фільтри</Link>
-      </div>
-    </form>
+    </>
   );
 }

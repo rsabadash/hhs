@@ -1,0 +1,235 @@
+/* Shared by public and admin lists. Keep controls independent of page forms. */
+.list-controls {
+  margin: 24px 0 18px;
+  min-width: 0;
+}
+.list-controls .list-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #a4b1a3;
+  border-radius: 8px;
+  margin: 0 0 26px;
+}
+.list-controls .list-search label {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+.list-controls .list-search input {
+  background: transparent;
+  border: 0;
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--ink);
+}
+.list-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.list-controls .list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.list-controls .list-result-count {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.list-controls .list-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.list-controls .list-sort {
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 400;
+}
+.list-controls .list-sort select {
+  width: auto;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid #a4b1a3;
+  border-radius: 6px;
+  font: inherit;
+}
+.list-controls button,
+.list-controls button[type] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #a4b1a3;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.list-controls button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.list-controls button.list-primary {
+  background: #345443;
+  border-color: #345443;
+  color: #fff;
+}
+.list-controls .list-filter-count {
+  border-radius: 20px;
+  padding: 2px 7px;
+  background: #345443;
+  color: #fff;
+  font-size: 12px;
+}
+.list-controls .filter-dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  padding: 0;
+  width: min(440px, 100%);
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  background: #fff;
+  color: var(--ink);
+  border: 0;
+  border-left: 1px solid #d9ded5;
+  box-shadow: -12px 0 40px #0002;
+  overflow: hidden;
+}
+.list-controls .filter-dialog::backdrop {
+  background: #1c2c2566;
+}
+.filter-drawer-form {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+}
+.filter-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #d9ded5;
+}
+.filter-drawer-header h2 {
+  margin: 0;
+  font:
+    600 22px/1.3 Arial,
+    Helvetica,
+    sans-serif;
+}
+.list-controls .filter-drawer-header button {
+  font-size: 24px;
+}
+.filter-drawer-fields {
+  padding: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.filter-drawer-fields .catalog-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.filter-drawer-fields label {
+  min-width: 0;
+}
+.list-controls .filter-drawer-fields label,
+.list-controls .filter-drawer-fields .catalog-picker {
+  margin-bottom: 0;
+}
+.filter-drawer-fields details {
+  min-width: 0;
+}
+.filter-drawer-fields summary {
+  cursor: pointer;
+  min-height: 44px;
+}
+.filter-drawer-fields details label {
+  margin-top: 12px;
+}
+.filter-drawer-fields .catalog-actions {
+  flex-wrap: wrap;
+}
+.filter-drawer-fields .attribute-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+.filter-drawer-footer {
+  margin: 0;
+  max-width: none;
+  width: 100%;
+  color: var(--ink);
+  font-size: 14px;
+  display: flex;
+  gap: 10px;
+  padding: 18px 24px max(18px, env(safe-area-inset-bottom));
+  border-top: 1px solid #d9ded5;
+  background: #fff;
+}
+.filter-drawer-footer .list-primary {
+  flex: 1;
+}
+@media (max-width: 600px) {
+  .list-controls .list-toolbar-actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .list-controls .list-sort {
+    display: grid;
+    gap: 5px;
+    max-width: calc(100% - 120px);
+  }
+  .list-controls .list-sort select {
+    width: 100%;
+  }
+  .list-controls .list-filter-trigger {
+    align-self: end;
+  }
+  .list-controls .filter-dialog {
+    width: 100%;
+    border: 0;
+  }
+  .filter-drawer-header,
+  .filter-drawer-fields {
+    padding: 18px;
+  }
+  .filter-drawer-footer {
+    padding-inline: 18px;
+  }
+  .filter-drawer-fields input,
+  .filter-drawer-fields select,
+  .list-controls .list-search input {
+    font-size: 16px;
+  }
+}

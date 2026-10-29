@@ -38,10 +38,10 @@ export default async function OrdersPage({
       </div>
       <OrderFilters
         key={qs.toString()}
+        total={data.total}
         query={query}
         initialWarehouse={warehouse}
       />
-      <p>Знайдено: {data.total}</p>
       {!data.items.length && (
         <p>Замовлень не знайдено. Створіть замовлення або змініть фільтри.</p>
       )}

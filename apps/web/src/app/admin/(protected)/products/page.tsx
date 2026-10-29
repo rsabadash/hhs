@@ -69,12 +69,12 @@ export default async function Products({
       </div>
       <ProductFilters
         key={qs.toString()}
+        total={data.total}
         query={query}
         category={category}
         warehouse={warehouse}
         attributes={attributes}
       />
-      <p role="status">Знайдено товарів: {data.total}</p>
       {!data.items.length ? (
         <div className="catalog-card">
           <h2>

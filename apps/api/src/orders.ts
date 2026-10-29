@@ -288,7 +288,7 @@ export class OrderService {
         items: (
           await tx.order.findMany({
             where,
-            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+            orderBy: [{ createdAt: q.sort }, { id: q.sort }],
             skip: (q.page - 1) * q.pageSize,
             take: q.pageSize,
             select: {

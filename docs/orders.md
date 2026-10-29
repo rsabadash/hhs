@@ -26,7 +26,7 @@ Order detail shows the SKU, product/variant/attribute description, unit and pric
 
 ## Search and filters
 
-The order list searches reference, buyer name, contact and saved SKU/product descriptions. Filter by warehouse, status and inclusive creation-date range in UTC. Timestamps are displayed in Europe/Kyiv. Pagination and filters stay in the URL; results sort newest first with an ID tie-breaker.
+The order list searches reference, buyer name, contact and saved SKU/product descriptions. Search is above the list; **Фільтри** opens a side panel for warehouse, status and inclusive creation-date range in UTC. Timestamps are displayed in Europe/Kyiv. Pagination and filters stay in the URL. Sorting beside the results offers newest first (default) or oldest first, with an ID tie-breaker.
 
 ## API and consistency
 

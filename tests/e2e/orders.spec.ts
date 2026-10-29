@@ -272,6 +272,7 @@ test('admin reviews, creates, cancels and fulfills orders with stock history', a
     await publicStock(false);
     await page.goto('/admin/orders');
     await page.getByLabel('Пошук', { exact: true }).fill(m);
+    await page.getByRole('button', { name: /^Фільтри/ }).click();
     await page
       .getByRole('combobox', { name: 'Статус', exact: true })
       .selectOption('FULFILLED');

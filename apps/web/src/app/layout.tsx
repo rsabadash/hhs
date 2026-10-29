@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import '@/components/list-controls.css';
 
 export const metadata: Metadata = {
   title: 'HHS — матеріали для прикрас',

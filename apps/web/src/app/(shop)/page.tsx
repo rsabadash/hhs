@@ -42,10 +42,8 @@ export default async function Catalog({
           напишіть нам в Instagram.
         </p>
       </section>
+      <Filters filters={facets.value} params={params} total={data?.total} />
       <div className="catalog-layout">
-        <aside aria-label="Фільтри каталогу">
-          <Filters filters={facets.value} params={params} />
-        </aside>
         <section aria-label="Товари" className="catalog-results">
           {!data ? (
             <div role="alert" className="shop-notice">
@@ -55,7 +53,6 @@ export default async function Catalog({
             </div>
           ) : (
             <>
-              <p className="result-count">Знайдено товарів: {data.total}</p>
               {data.items.length ? (
                 <div className="product-grid">
                   {data.items.map((p) => (

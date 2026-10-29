@@ -22,7 +22,7 @@ Tags are normalized to Unicode NFC, lowercase Ukrainian text and single spaces. 
 
 ## Search and filters
 
-Lists use server-side pagination (20 by default, maximum 50), stable name/ID sorting, Ukrainian name/SKU search, category including all descendants, tag, publication, price range, selected attribute values, active/archive status and warehouse-specific availability. Controls persist in the URL, and applying filters resets pagination. Clear filters with **Скинути фільтри**.
+Lists use server-side pagination (20 by default, maximum 50), stable name/ID sorting, Ukrainian name/SKU search, category including all descendants, tag, publication, price range, selected attribute values, active/archive status and warehouse-specific availability. Search is above the list, sorting is beside the results, and **Фільтри** opens the side panel. Controls persist in the URL, and applying filters resets pagination. **Скинути фільтри** clears filters while preserving search and sorting.
 
 Variant-level filters must all match one active SKU. Shared product attributes count for every SKU. Availability means a positive balance in the selected warehouse, or any warehouse when none is selected. Warehouse selection affects availability filtering; it is not a restriction when availability is unset. Stock-writing workflows are delivered in M4; no direct balance editor is provided here.
 

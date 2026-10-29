@@ -10,6 +10,7 @@ import {
   type ReferenceList,
 } from '@/lib/references';
 import ReferenceForm from './reference-form';
+import ReferenceFilters from './reference-filters';
 
 function description(kind: ReferenceKind, item: Reference) {
   if (kind === 'categories') return item.parent?.name || 'Коренева категорія';
@@ -87,23 +88,12 @@ export default function ReferenceManager({
           ← Усі атрибути
         </Link>
       ) : null}
-      {kind === 'categories' ? (
-        <nav className="tree-path" aria-label="Структура категорій">
-          <Link href="/admin/categories?parentId=root">Кореневі категорії</Link>
-          {parent ? (
-            <>
-              <span aria-hidden="true">/</span>
-              <Link
-                href={href({ parentId: parent.parentId || 'root', page: '1' })}
-              >
-                На рівень вище
-              </Link>
-              <span>/ {parent.name}</span>
-            </>
-          ) : null}
-          <Link href="/admin/categories">Усі категорії</Link>
-        </nav>
-      ) : null}
+      <ReferenceFilters
+        kind={kind}
+        query={query}
+        parent={parent}
+        total={list.total}
+      />
       {saved ? (
         <p role="status" className="feedback">
           Запис збережено.
@@ -124,104 +114,8 @@ export default function ReferenceManager({
           }}
         />
       ) : null}
-      <form className="list-filters" action={`/admin/${kind}`}>
-        <label className="search-field">
-          Пошук
-          <input
-            name="q"
-            type="search"
-            defaultValue={current.get('q') || ''}
-            maxLength={100}
-            placeholder={
-              kind === 'suppliers'
-                ? 'Назва, пошта або телефон'
-                : 'Назва або позначення'
-            }
-          />
-        </label>
-        {current.get('attributeId') ? (
-          <input
-            type="hidden"
-            name="attributeId"
-            value={current.get('attributeId')!}
-          />
-        ) : null}
-        {current.get('parentId') ? (
-          <input
-            type="hidden"
-            name="parentId"
-            value={current.get('parentId')!}
-          />
-        ) : null}
-        {kind === 'attributes' ? (
-          <label>
-            Тип
-            <select name="kind" defaultValue={current.get('kind') || ''}>
-              <option value="">Усі типи</option>
-              {Object.entries(kindLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-        {kind === 'units' ? (
-          <label>
-            Кількість
-            <select
-              name="allowsFraction"
-              defaultValue={current.get('allowsFraction') || ''}
-            >
-              <option value="">Будь-яка</option>
-              <option value="false">Ціла</option>
-              <option value="true">Дробова</option>
-            </select>
-          </label>
-        ) : null}
-        {kind === 'suppliers' ? (
-          <label>
-            Контакти
-            <select
-              name="hasContact"
-              defaultValue={current.get('hasContact') || ''}
-            >
-              <option value="">Усі</option>
-              <option value="true">Вказані</option>
-              <option value="false">Не вказані</option>
-            </select>
-          </label>
-        ) : null}
-        {kind === 'warehouses' ? (
-          <label>
-            Адреса
-            <select
-              name="hasAddress"
-              defaultValue={current.get('hasAddress') || ''}
-            >
-              <option value="">Усі</option>
-              <option value="true">Вказана</option>
-              <option value="false">Не вказана</option>
-            </select>
-          </label>
-        ) : null}
-        <label>
-          Сортування
-          <select name="sort" defaultValue={current.get('sort') || 'asc'}>
-            <option value="asc">Назва: А → Я</option>
-            <option value="desc">Назва: Я → А</option>
-          </select>
-        </label>
-        <button>Знайти</button>
-        <Link
-          href={`/admin/${kind}${attribute ? `?attributeId=${attribute.id}` : ''}`}
-        >
-          Скинути
-        </Link>
-      </form>
       <div className="list-heading">
         <h2>{parent ? `Підкатегорії: ${parent.name}` : 'Записи'}</h2>
-        <span className="count">Знайдено: {list.total}</span>
       </div>
       {list.items.length ? (
         <ul className="reference-list">

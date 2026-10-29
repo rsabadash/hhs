@@ -1,10 +1,38 @@
 'use client';
-import Link from 'next/link';
+import ListControls from '@/components/list-controls';
 import { useState } from 'react';
 import ReferencePicker from './reference-picker';
 import ProductAttributes from './product-attributes';
 import type { Assignment, Selection } from '@/lib/catalog';
 export default function ProductFilters({
+  total,
+  ...props
+}: Parameters<typeof FilterFields>[0] & { total?: number }) {
+  return (
+    <ListControls
+      action="/admin/products"
+      query={new URLSearchParams(props.query).toString()}
+      searchLabel="Пошук за назвою або SKU"
+      placeholder="Пошук за назвою або SKU"
+      resultLabel={`Знайдено товарів: ${total}`}
+      filterKeys={[
+        'categoryId',
+        'tag',
+        'status',
+        'minPrice',
+        'maxPrice',
+        'warehouseId',
+        'inStock',
+        'archived',
+        'valueIds',
+      ]}
+      filterDefaults={{ archived: 'false' }}
+    >
+      <FilterFields {...props} />
+    </ListControls>
+  );
+}
+function FilterFields({
   query,
   category: initialCategory,
   warehouse: initialWarehouse,
@@ -19,12 +47,8 @@ export default function ProductFilters({
   const [warehouse, setWarehouse] = useState(initialWarehouse);
   const [attributes, setAttributes] = useState(initialAttributes);
   return (
-    <form action="/admin/products" className="catalog-card">
+    <>
       <div className="catalog-grid">
-        <label>
-          Пошук за назвою або SKU
-          <input name="q" defaultValue={query.q} maxLength={100} />
-        </label>
         <ReferencePicker
           label="Категорія з підкатегоріями"
           kind="categories"
@@ -90,13 +114,6 @@ export default function ProductFilters({
             <option value="true">Архівні</option>
           </select>
         </label>
-        <label>
-          Сортування
-          <select name="sort" defaultValue={query.sort || 'asc'}>
-            <option value="asc">Назва: А → Я</option>
-            <option value="desc">Назва: Я → А</option>
-          </select>
-        </label>
       </div>
       <details open={attributes.length > 0}>
         <summary>Фільтр за атрибутами</summary>
@@ -112,10 +129,6 @@ export default function ProductFilters({
             .join(',')}
         />
       )}
-      <div className="catalog-actions">
-        <button className="primary">Застосувати</button>
-        <Link href="/admin/products">Скинути фільтри</Link>
-      </div>
-    </form>
+    </>
   );
 }

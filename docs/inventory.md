@@ -21,7 +21,7 @@ A repeated receive request returns the already-received document without adding 
 
 **Рух запасів** records quantity, operation, warehouse, actor and time, with a link to the supply, order or inventory-count document. Filter by warehouse, operation and dates, or search by source reference/product/SKU. The per-SKU history link preserves warehouse and variant IDs.
 
-Supplies and counts have searchable, paginated lists with relevant status, supplier, warehouse and date filters. Filters, sort order and page are in the URL. Date ranges are inclusive calendar dates in UTC (labeled in the form); displayed timestamps use Europe/Kyiv. Applying filters starts at page one. Sorting has an ID tie-breaker.
+Supplies and counts have searchable, paginated lists with relevant status, supplier, warehouse and date filters. All inventory lists place search above the results, sorting beside them and filters inside the **Фільтри** side panel. Filters, sort order and page are in the URL. Date ranges are inclusive calendar dates in UTC (labeled in the form); displayed timestamps use Europe/Kyiv. Applying filters starts at page one; resetting filters retains search and sorting. Sorting has an ID tie-breaker.
 
 ## Count and reconcile stock
 

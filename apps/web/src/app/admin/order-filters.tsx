@@ -1,10 +1,31 @@
 'use client';
-import Link from 'next/link';
+import ListControls from '@/components/list-controls';
 import { useState } from 'react';
 import { orderStatuses } from '@/lib/orders';
 import type { Selection } from '@/lib/catalog';
 import ReferencePicker from './reference-picker';
 export default function OrderFilters({
+  total,
+  ...props
+}: Parameters<typeof FilterFields>[0] & { total?: number }) {
+  return (
+    <ListControls
+      action="/admin/orders"
+      query={new URLSearchParams(props.query).toString()}
+      placeholder="Номер, покупець, контакт, товар або SKU"
+      resultLabel={`Знайдено: ${total}`}
+      filterKeys={['warehouseId', 'status', 'from', 'to']}
+      defaultSort="desc"
+      sortOptions={[
+        { value: 'desc', label: 'Спочатку нові' },
+        { value: 'asc', label: 'Спочатку старі' },
+      ]}
+    >
+      <FilterFields {...props} />
+    </ListControls>
+  );
+}
+function FilterFields({
   query,
   initialWarehouse,
 }: {
@@ -13,17 +34,8 @@ export default function OrderFilters({
 }) {
   const [warehouse, setWarehouse] = useState(initialWarehouse);
   return (
-    <form action="/admin/orders" className="catalog-card">
+    <>
       <div className="catalog-grid">
-        <label>
-          Пошук
-          <input
-            name="q"
-            maxLength={100}
-            defaultValue={query.q}
-            placeholder="Номер, покупець, контакт, товар або SKU"
-          />
-        </label>
         <ReferencePicker
           kind="warehouses"
           label="Склад"
@@ -54,12 +66,6 @@ export default function OrderFilters({
           <input type="date" name="to" defaultValue={query.to} />
         </label>
       </div>
-      <div className="catalog-actions">
-        <button type="submit" className="primary">
-          Застосувати
-        </button>
-        <Link href="/admin/orders">Скинути</Link>
-      </div>
-    </form>
+    </>
   );
 }

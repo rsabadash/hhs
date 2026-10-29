@@ -161,13 +161,14 @@ test('admin creates and edits two SKU variants, filters them, and previews share
       `/admin/products?q=${marker}&valueIds=${small.id}&minPrice=50`,
     );
     await expect(page.getByRole('status')).toContainText('Знайдено товарів: 0');
-    await page.getByRole('link', { name: 'Скинути фільтри' }).click();
+    await page.getByRole('button', { name: /^Фільтри/ }).click();
+    await page.getByRole('button', { name: 'Скинути фільтри' }).click();
     await expect(page).toHaveURL('/admin/products');
+    await page.getByRole('button', { name: /^Фільтри/ }).click();
     await expect(page.getByLabel('Мін. ціна, грн')).toHaveValue('');
+    await page.getByRole('button', { name: 'Закрити фільтри' }).click();
     await page.getByLabel('Пошук за назвою або SKU').fill(marker);
-    await page
-      .getByRole('button', { name: 'Застосувати', exact: true })
-      .click();
+    await page.getByRole('button', { name: 'Знайти', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('Знайдено товарів: 1');
     await expect(
       page.getByText(`${marker}-1`.toUpperCase(), { exact: true }),

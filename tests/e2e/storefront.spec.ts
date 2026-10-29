@@ -151,10 +151,10 @@ test('customer finds a received published SKU, selects variants and prepares an 
     // Browser remains anonymous; the separate request context owns admin cookies.
     await page.goto('/');
     await page.getByRole('searchbox', { name: 'Пошук', exact: true }).fill(m);
+    await page.getByRole('button', { name: /^Фільтри/ }).click();
     await page
       .getByRole('combobox', { name: 'Категорія', exact: true })
       .selectOption(parent.id);
-    await page.getByText('Фільтри та сортування', { exact: true }).click();
     await page
       .getByRole('combobox', { name: `Діаметр ${m}, мм`, exact: true })
       .selectOption(small.id);
@@ -234,10 +234,11 @@ test('customer finds a received published SKU, selects variants and prepares an 
     await expect(
       page.getByRole('heading', { name: 'Нічого не знайдено' }),
     ).toBeVisible();
+    await page.getByRole('button', { name: /^Фільтри/ }).click();
     await page
-      .getByRole('link', { name: 'Скинути фільтри', exact: true })
+      .getByRole('button', { name: 'Скинути фільтри', exact: true })
       .click();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL(`/?q=${smallVariant.sku}`);
     await page.goto('/?minPrice=40&maxPrice=20');
     await expect(page.getByRole('main').getByRole('alert')).toContainText(
       'Перевірте фільтри',

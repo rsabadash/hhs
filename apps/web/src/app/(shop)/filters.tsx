@@ -1,11 +1,13 @@
-import Link from 'next/link';
+import ListControls from '@/components/list-controls';
 import type { PublicFilters } from '../../lib/storefront';
 export function Filters({
   filters,
   params,
+  total,
 }: {
   filters: PublicFilters;
   params: URLSearchParams;
+  total?: number;
 }) {
   const selected = new Set(params.get('valueIds')?.split(',') ?? []);
   const categories = new Map(filters.categories.map((c) => [c.id, c]));
@@ -27,17 +29,23 @@ export function Filters({
       value,
     ]);
   return (
-    <form action="/" className="catalog-filters" key={params.toString()}>
-      <label>
-        Пошук
-        <input
-          type="search"
-          name="q"
-          defaultValue={params.get('q') ?? ''}
-          maxLength={100}
-          placeholder="Назва або SKU"
-        />
-      </label>
+    <ListControls
+      key={params.toString()}
+      action="/"
+      query={params.toString()}
+      placeholder="Назва або SKU"
+      resultLabel={
+        total === undefined ? 'Перевірте фільтри' : `Знайдено товарів: ${total}`
+      }
+      filterKeys={[
+        'categoryId',
+        'tag',
+        'minPrice',
+        'maxPrice',
+        'inStock',
+        'valueIds',
+      ]}
+    >
       <label>
         Категорія
         <select name="categoryId" defaultValue={params.get('categoryId') ?? ''}>
@@ -49,86 +57,66 @@ export function Filters({
           ))}
         </select>
       </label>
-      <details
-        open={Boolean(
-          params.get('valueIds') ||
-          params.get('tag') ||
-          params.get('minPrice') ||
-          params.get('maxPrice') ||
-          params.get('inStock'),
-        )}
-      >
-        <summary>Фільтри та сортування</summary>
+      <label>
+        Тег
+        <select name="tag" defaultValue={params.get('tag') ?? ''}>
+          <option value="">Усі теги</option>
+          {filters.tags.map((t) => (
+            <option key={t}>{t}</option>
+          ))}
+        </select>
+      </label>
+      <div className="price-fields">
         <label>
-          Тег
-          <select name="tag" defaultValue={params.get('tag') ?? ''}>
-            <option value="">Усі теги</option>
-            {filters.tags.map((t) => (
-              <option key={t}>{t}</option>
+          Ціна від, ₴
+          <input
+            name="minPrice"
+            type="number"
+            min="0"
+            max="999999999999.99"
+            step="0.01"
+            defaultValue={params.get('minPrice') ?? ''}
+          />
+        </label>
+        <label>
+          Ціна до, ₴
+          <input
+            name="maxPrice"
+            type="number"
+            min="0"
+            max="999999999999.99"
+            step="0.01"
+            defaultValue={params.get('maxPrice') ?? ''}
+          />
+        </label>
+      </div>
+      <label>
+        Наявність
+        <select name="inStock" defaultValue={params.get('inStock') ?? ''}>
+          <option value="">Усі товари</option>
+          <option value="true">Є в наявності</option>
+          <option value="false">Немає в наявності</option>
+        </select>
+      </label>
+      {Array.from(attributes, ([id, values]) => (
+        <label key={id}>
+          {values[0].attribute.name}
+          {values[0].attribute.measurementSymbol
+            ? `, ${values[0].attribute.measurementSymbol}`
+            : ''}
+          <select
+            name="valueIds"
+            defaultValue={values.find((v) => selected.has(v.id))?.id ?? ''}
+          >
+            <option value="">Усі значення</option>
+            {values.map((v) => (
+              <option value={v.id} key={v.id}>
+                {v.label}
+              </option>
             ))}
           </select>
         </label>
-        <div className="price-fields">
-          <label>
-            Ціна від, ₴
-            <input
-              name="minPrice"
-              type="number"
-              min="0"
-              max="999999999999.99"
-              step="0.01"
-              defaultValue={params.get('minPrice') ?? ''}
-            />
-          </label>
-          <label>
-            Ціна до, ₴
-            <input
-              name="maxPrice"
-              type="number"
-              min="0"
-              max="999999999999.99"
-              step="0.01"
-              defaultValue={params.get('maxPrice') ?? ''}
-            />
-          </label>
-        </div>
-        <label>
-          Наявність
-          <select name="inStock" defaultValue={params.get('inStock') ?? ''}>
-            <option value="">Усі товари</option>
-            <option value="true">Є в наявності</option>
-            <option value="false">Немає в наявності</option>
-          </select>
-        </label>
-        {Array.from(attributes, ([id, values]) => (
-          <label key={id}>
-            {values[0].attribute.name}
-            {values[0].attribute.measurementSymbol
-              ? `, ${values[0].attribute.measurementSymbol}`
-              : ''}
-            <select
-              name="valueIds"
-              defaultValue={values.find((v) => selected.has(v.id))?.id ?? ''}
-            >
-              <option value="">Усі значення</option>
-              {values.map((v) => (
-                <option value={v.id} key={v.id}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        ))}
-        <label>
-          Сортування
-          <select name="sort" defaultValue={params.get('sort') ?? 'asc'}>
-            <option value="asc">За назвою: А–Я</option>
-            <option value="desc">За назвою: Я–А</option>
-          </select>
-        </label>
-      </details>
-      <button type="submit">Застосувати</button>
-      <Link href="/">Скинути фільтри</Link>
-    </form>
+      ))}
+    </ListControls>
   );
 }

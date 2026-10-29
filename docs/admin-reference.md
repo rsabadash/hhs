@@ -6,7 +6,9 @@ M2 adds `/admin/login` and management pages for categories, attributes and their
 
 Open `/admin` and sign in with a provisioned administrator account. There is no public registration. Every administrator has the same management role.
 
-Each reference list supports search, ascending/descending name sorting and pagination (20 records per page). Clear filters with **Скинути**. Categories can be browsed from the root down through **Підкатегорії**, with a link back up. The category editor includes a paginated parent-category search. Moving a category under itself or a descendant is rejected, including concurrent moves.
+Each reference list has search at the top, ascending/descending name sorting beside the results and pagination (20 records per page). Open **Фільтри** to change filters in the side panel, then choose **Застосувати**. Closing the panel discards unapplied changes. **Скинути фільтри** clears filters immediately while retaining search and sorting. The panel fills the screen width on mobile.
+
+Categories can be browsed through **Підкатегорії** or by choosing all, root or child categories in the filter panel. The category editor includes a paginated parent-category search. Moving a category under itself or a descendant is rejected, including concurrent moves.
 
 Additional filters: attribute kind, whole/fractional units, suppliers with/without contacts, and warehouses with/without an address. Attribute values are scoped to their attribute and searchable by label.
 

@@ -8,6 +8,11 @@ import {
 } from './order-validation.js';
 const id = randomUUID();
 describe('order input', () => {
+  it('keeps newest-first as default and bounds order sorting', () => {
+    expect(orderQuery.parse({}).sort).toBe('desc');
+    expect(orderQuery.parse({ sort: 'asc' }).sort).toBe('asc');
+    expect(orderQuery.safeParse({ sort: 'invalid' }).success).toBe(false);
+  });
   it('aggregates decimal quantities and canonicalizes equivalent prices', () => {
     expect(
       orderLines([
